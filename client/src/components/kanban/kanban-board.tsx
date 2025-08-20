@@ -312,7 +312,7 @@ export function KanbanBoard() {
       {/* Main Board */}
       <main className="flex-1 p-4">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex flex-col lg:flex-row gap-6 min-h-full">
+          <div className="flex flex-wrap gap-6 min-h-full">
             {columns.map((column: Column, index: number) => (
               <KanbanColumn
                 key={column.id}
@@ -326,7 +326,7 @@ export function KanbanBoard() {
                   
             
             {/* Add Column Button */}
-            <div className="w-80 flex-shrink-0">
+            <div className="w-80">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

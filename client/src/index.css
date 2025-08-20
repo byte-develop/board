@@ -504,22 +504,15 @@
   }
 }
 
-/* Mobile modal improvements */
+/* Mobile modal improvements - only for modals */
 @media (max-width: 640px) {
-  /* Full screen modals on mobile */
+  /* Better modal sizing on mobile */
   [data-radix-dialog-content] {
-    position: fixed !important;
-    inset: 1rem !important;
-    left: 1rem !important;
-    right: 1rem !important;
-    top: 1rem !important;
-    bottom: 1rem !important;
-    width: auto !important;
-    height: auto !important;
-    max-width: none !important;
-    max-height: none !important;
-    transform: none !important;
-    margin: 0 !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin: 1rem !important;
+    padding: 1rem !important;
+    max-height: calc(100vh - 2rem) !important;
   }
   
   /* Stack form buttons vertically on mobile */
@@ -534,16 +527,5 @@
   [data-testid="create-column-modal"] button {
     width: 100% !important;
     min-height: 44px !important;
-  }
-  
-  /* Improve task modal footer on mobile */
-  .flex.justify-between {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-  
-  .flex.justify-between .flex {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
   }
 }

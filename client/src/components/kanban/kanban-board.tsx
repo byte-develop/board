@@ -83,10 +83,44 @@ export function KanbanBoard() {
       
       return response.json();
     },
+    // Оптимистичное обновление - сразу обновляем UI
+    onMutate: async ({ taskId, columnId, position }) => {
+      // Отменяем любые исходящие refetch запросы
+      await queryClient.cancelQueries({ queryKey: ["/api/columns", "tasks"] });
+      
+      // Получаем текущие данные
+      const previousTasks = queryClient.getQueryData<Task[]>(["/api/columns", "tasks"]);
+      
+      if (previousTasks) {
+        // Обновляем задачу оптимистично
+        const updatedTasks = previousTasks.map(task => {
+          if (task.id === taskId) {
+            let status = "backlog";
+            if (columnId === "in-progress") status = "in-progress";
+            else if (columnId === "review") status = "review";
+            else if (columnId === "done") status = "done";
+            
+            return { ...task, columnId, position, status };
+          }
+          return task;
+        });
+        
+        // Устанавливаем оптимистично обновлённые данные
+        queryClient.setQueryData(["/api/columns", "tasks"], updatedTasks);
+      }
+      
+      // Возвращаем контекст для rollback в случае ошибки
+      return { previousTasks };
+    },
     onSuccess: () => {
+      // Обновляем данные с сервера для синхронизации
       queryClient.invalidateQueries({ queryKey: ["/api/columns", "tasks"] });
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      // Откатываем изменения в случае ошибки
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["/api/columns", "tasks"], context.previousTasks);
+      }
       toast({ title: "Failed to move task", variant: "destructive" });
     },
   });

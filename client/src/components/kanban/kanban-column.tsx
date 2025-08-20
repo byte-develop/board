@@ -89,37 +89,33 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`p-4 space-y-3 min-h-96 transition-colors duration-200 ${
+                className={`p-4 min-h-96 transition-colors duration-200 ${
                   snapshot.isDraggingOver 
                     ? "bg-blue-50/50 dark:bg-blue-900/10" 
                     : ""
                 }`}
               >
-                <AnimatePresence mode="popLayout">
-                  {tasks.map((task, taskIndex) => (
-                    <Draggable key={task.id} draggableId={task.id} index={taskIndex}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={{
-                            ...provided.draggableProps.style,
-                            transform: snapshot.isDragging 
-                              ? provided.draggableProps.style?.transform 
-                              : provided.draggableProps.style?.transform
-                          }}
-                        >
-                          <TaskCard
-                            task={task}
-                            onEdit={onEditTask}
-                            isDragging={snapshot.isDragging}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </AnimatePresence>
+                {tasks.map((task, taskIndex) => (
+                  <Draggable key={task.id} draggableId={task.id} index={taskIndex}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          marginBottom: '12px'
+                        }}
+                      >
+                        <TaskCard
+                          task={task}
+                          onEdit={onEditTask}
+                          isDragging={snapshot.isDragging}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
                 {provided.placeholder}
                 
                 {/* Drop Zone Indicator */}

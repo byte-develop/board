@@ -503,3 +503,29 @@
     display: none !important;
   }
 }
+
+/* Additional mobile modal improvements */
+@media (max-width: 640px) {
+  /* Better modal positioning and sizing */
+  [data-radix-dialog-content] {
+    width: calc(100vw - 1rem) !important;
+    margin: 0.5rem !important;
+    max-height: 90vh !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  
+  /* Stack form buttons vertically on mobile */
+  [data-testid="create-task-modal"] .flex.justify-end,
+  [data-testid="create-column-modal"] .flex.justify-end {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Full width buttons on mobile forms */
+  [data-testid="create-task-modal"] button,
+  [data-testid="create-column-modal"] button {
+    width: 100% !important;
+  }
+}

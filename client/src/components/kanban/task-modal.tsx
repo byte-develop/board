@@ -141,7 +141,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-4">
           <DialogTitle className="sr-only">Edit Task</DialogTitle>
           <DialogDescription className="sr-only">

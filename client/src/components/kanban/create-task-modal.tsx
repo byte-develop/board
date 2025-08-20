@@ -50,7 +50,7 @@ export function CreateTaskModal({ isOpen, onClose, onCreateTask, columnId }: Cre
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md w-[calc(100vw-2rem)] mx-4 sm:mx-auto" data-testid="create-task-modal">
+      <DialogContent className="max-w-md w-[calc(100vw-1rem)] sm:w-full" data-testid="create-task-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />

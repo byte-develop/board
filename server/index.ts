@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from 'express-session';
+import connectPg from 'connect-pg-simple';
 import { registerRoutes } from "./routes";
 import config from "./config";
 import { setupVite, serveStatic, log } from "./vite";
@@ -30,8 +31,14 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
-// Session configuration
+// Session configuration with PostgreSQL store
+const pgSession = connectPg(session);
 app.use(session({
+  store: new pgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    tableName: 'session',
+  }),
   secret: config.session.secret,
   name: config.session.name,
   resave: false,

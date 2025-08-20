@@ -5,6 +5,7 @@ import { z } from "zod";
 
 export const boards = pgTable("boards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Добавляем привязку к пользователю
   name: text("name").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -14,6 +15,7 @@ export const boards = pgTable("boards", {
 export const columns = pgTable("columns", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   boardId: varchar("board_id").notNull(),
+  userId: varchar("user_id").notNull(), // Добавляем привязку к пользователю
   title: text("title").notNull(),
   position: integer("position").notNull(),
   color: text("color").notNull().default("#3b82f6"),
@@ -23,6 +25,7 @@ export const columns = pgTable("columns", {
 export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   columnId: varchar("column_id").notNull(),
+  userId: varchar("user_id").notNull(), // Добавляем привязку к пользователю
   title: text("title").notNull(),
   description: text("description"),
   priority: text("priority").notNull().default("medium"), // low, medium, high
@@ -45,6 +48,7 @@ export const dependencies = pgTable("dependencies", {
 export const comments = pgTable("comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   taskId: varchar("task_id").notNull(),
+  userId: varchar("user_id").notNull(), // Добавляем привязку к пользователю
   content: text("content").notNull(),
   author: text("author").notNull().default("You"),
   createdAt: timestamp("created_at").defaultNow(),

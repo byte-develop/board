@@ -1,10 +1,32 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTaskSchema, insertColumnSchema, insertCommentSchema, insertDependencySchema } from "@shared/schema";
 import { registerSchema, loginSchema } from "@shared/auth-schema";
 import { AuthService } from "./auth";
 import OpenAI from "openai";
+
+// Middleware для проверки аутентификации
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const sessionId = req.session.sessionId;
+    if (!sessionId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const user = await AuthService.getUserBySession(sessionId);
+    if (!user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    // Добавляем userId в объект request
+    (req as any).userId = user.id;
+    next();
+  } catch (error) {
+    console.error("Authentication error:", error);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+}
 
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || ""
@@ -25,6 +47,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Automatically log in after registration
       const { user: loggedInUser, sessionId } = await AuthService.login(validatedData.email, validatedData.password);
+      
+      // Initialize default data for the new user
+      await storage.initializeDefaultDataForUser(loggedInUser.id);
       
       // Set session cookie
       req.session.sessionId = sessionId;
@@ -93,18 +118,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Board routes
-  app.get("/api/boards", async (req, res) => {
+  app.get("/api/boards", requireAuth, async (req, res) => {
     try {
-      const boards = await storage.getAllBoards();
+      const userId = (req as any).userId;
+      const boards = await storage.getAllBoards(userId);
       res.json(boards);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.get("/api/boards/:id", async (req, res) => {
+  app.get("/api/boards/:id", requireAuth, async (req, res) => {
     try {
-      const board = await storage.getBoard(req.params.id);
+      const userId = (req as any).userId;
+      const board = await storage.getBoard(req.params.id, userId);
       if (!board) {
         return res.status(404).json({ message: "Board not found" });
       }
@@ -115,38 +142,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Column routes
-  app.get("/api/boards/:boardId/columns", async (req, res) => {
+  app.get("/api/boards/:boardId/columns", requireAuth, async (req, res) => {
     try {
-      const columns = await storage.getColumnsByBoardId(req.params.boardId);
+      const userId = (req as any).userId;
+      const columns = await storage.getColumnsByBoardId(req.params.boardId, userId);
       res.json(columns);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.post("/api/columns", async (req, res) => {
+  app.post("/api/columns", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const validatedData = insertColumnSchema.parse(req.body);
-      const column = await storage.createColumn(validatedData);
+      const column = await storage.createColumn(validatedData, userId);
       res.status(201).json(column);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.put("/api/columns/:id", async (req, res) => {
+  app.put("/api/columns/:id", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const updates = req.body;
-      const column = await storage.updateColumn(req.params.id, updates);
+      const column = await storage.updateColumn(req.params.id, updates, userId);
       res.json(column);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.delete("/api/columns/:id", async (req, res) => {
+  app.delete("/api/columns/:id", requireAuth, async (req, res) => {
     try {
-      await storage.deleteColumn(req.params.id);
+      const userId = (req as any).userId;
+      await storage.deleteColumn(req.params.id, userId);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
@@ -154,18 +185,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Task routes
-  app.get("/api/columns/:columnId/tasks", async (req, res) => {
+  app.get("/api/columns/:columnId/tasks", requireAuth, async (req, res) => {
     try {
-      const tasks = await storage.getTasksByColumnId(req.params.columnId);
+      const userId = (req as any).userId;
+      const tasks = await storage.getTasksByColumnId(req.params.columnId, userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.get("/api/tasks/:id", async (req, res) => {
+  app.get("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
-      const task = await storage.getTask(req.params.id);
+      const userId = (req as any).userId;
+      const task = await storage.getTask(req.params.id, userId);
       if (!task) {
         return res.status(404).json({ message: "Task not found" });
       }
@@ -175,39 +208,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const validatedData = insertTaskSchema.parse(req.body);
-      const task = await storage.createTask(validatedData);
+      const task = await storage.createTask(validatedData, userId);
       res.status(201).json(task);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.put("/api/tasks/:id", async (req, res) => {
+  app.put("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const updates = req.body;
-      const task = await storage.updateTask(req.params.id, updates);
+      const task = await storage.updateTask(req.params.id, updates, userId);
       res.json(task);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.post("/api/tasks/:id/move", async (req, res) => {
+  app.post("/api/tasks/:id/move", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const { columnId, position } = req.body;
-      const task = await storage.moveTask(req.params.id, columnId, position);
+      const task = await storage.moveTask(req.params.id, columnId, position, userId);
       res.json(task);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.delete("/api/tasks/:id", async (req, res) => {
+  app.delete("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
-      await storage.deleteTask(req.params.id);
+      const userId = (req as any).userId;
+      await storage.deleteTask(req.params.id, userId);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
@@ -215,19 +252,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comment routes
-  app.get("/api/tasks/:taskId/comments", async (req, res) => {
+  app.get("/api/tasks/:taskId/comments", requireAuth, async (req, res) => {
     try {
-      const comments = await storage.getCommentsByTaskId(req.params.taskId);
+      const userId = (req as any).userId;
+      const comments = await storage.getCommentsByTaskId(req.params.taskId, userId);
       res.json(comments);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.post("/api/comments", async (req, res) => {
+  app.post("/api/comments", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const validatedData = insertCommentSchema.parse(req.body);
-      const comment = await storage.createComment(validatedData);
+      const comment = await storage.createComment(validatedData, userId);
       res.status(201).json(comment);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
@@ -235,19 +274,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dependency routes
-  app.get("/api/tasks/:taskId/dependencies", async (req, res) => {
+  app.get("/api/tasks/:taskId/dependencies", requireAuth, async (req, res) => {
     try {
-      const dependencies = await storage.getDependenciesByTaskId(req.params.taskId);
+      const userId = (req as any).userId;
+      const dependencies = await storage.getDependenciesByTaskId(req.params.taskId, userId);
       res.json(dependencies);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  app.post("/api/dependencies", async (req, res) => {
+  app.post("/api/dependencies", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const validatedData = insertDependencySchema.parse(req.body);
-      const dependency = await storage.createDependency(validatedData);
+      const dependency = await storage.createDependency(validatedData, userId);
       res.status(201).json(dependency);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Unknown error" });
@@ -255,19 +296,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Assistant routes
-  app.post("/api/ai/suggestions", async (req, res) => {
+  app.post("/api/ai/suggestions", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const { boardId } = req.body;
       
       if (!openai.apiKey) {
         return res.status(400).json({ message: "OpenAI API key not configured" });
       }
 
-      const columns = await storage.getColumnsByBoardId(boardId);
+      const columns = await storage.getColumnsByBoardId(boardId, userId);
       const allTasks = [];
       
       for (const column of columns) {
-        const tasks = await storage.getTasksByColumnId(column.id);
+        const tasks = await storage.getTasksByColumnId(column.id, userId);
         allTasks.push(...tasks.map(task => ({ ...task, columnTitle: column.title })));
       }
 
@@ -318,19 +360,20 @@ Please provide suggestions in JSON format with the following structure:
     }
   });
 
-  app.post("/api/ai/optimize-board", async (req, res) => {
+  app.post("/api/ai/optimize-board", requireAuth, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const { boardId } = req.body;
       
       if (!openai.apiKey) {
         return res.status(400).json({ message: "OpenAI API key not configured" });
       }
 
-      const columns = await storage.getColumnsByBoardId(boardId);
+      const columns = await storage.getColumnsByBoardId(boardId, userId);
       const allTasks = [];
       
       for (const column of columns) {
-        const tasks = await storage.getTasksByColumnId(column.id);
+        const tasks = await storage.getTasksByColumnId(column.id, userId);
         allTasks.push(...tasks.map(task => ({ ...task, columnTitle: column.title })));
       }
 

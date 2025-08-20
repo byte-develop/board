@@ -267,25 +267,26 @@
   transition: none !important;
 }
 
-/* Fix drag cursor positioning */
+/* Fix drag cursor positioning - force center positioning for consistent behavior */
 [data-rbd-draggable-id] {
-  transform-origin: top left !important;
+  transform-origin: center center !important;
 }
 
-/* Ensure drag preview has consistent positioning */
+/* Fix dragging element positioning by overriding library styles */
 [data-rbd-draggable-id][data-rbd-draggable-context-id] {
-  position: relative !important;
-  transform-origin: top left !important;
+  position: fixed !important;
+  transform-origin: center center !important;
+  z-index: 9999 !important;
 }
 
-/* Fix drag ghost element positioning */
-[data-rbd-draggable-id][style*="transform"] {
-  transform-origin: top left !important;
+/* Force consistent positioning during drag */
+div[data-rbd-draggable-id][style*="transform: translate3d"] {
+  transform-origin: center center !important;
 }
 
-/* Override any transform origin that might cause offset issues */
+/* Ensure all drag handles use center origin */
 [data-rbd-drag-handle-draggable-id] {
-  transform-origin: top left !important;
+  transform-origin: center center !important;
 }
 
 /* Print styles */

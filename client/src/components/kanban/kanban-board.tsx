@@ -92,18 +92,50 @@ export function KanbanBoard() {
       const previousTasks = queryClient.getQueryData<Task[]>(["/api/columns", "tasks"]);
       
       if (previousTasks) {
-        // Обновляем задачу оптимистично
-        const updatedTasks = previousTasks.map(task => {
+        let status = "backlog";
+        if (columnId === "in-progress") status = "in-progress";
+        else if (columnId === "review") status = "review";
+        else if (columnId === "done") status = "done";
+
+        // Сначала обновляем перетаскиваемую задачу
+        let updatedTasks = previousTasks.map(task => {
           if (task.id === taskId) {
-            let status = "backlog";
-            if (columnId === "in-progress") status = "in-progress";
-            else if (columnId === "review") status = "review";
-            else if (columnId === "done") status = "done";
-            
             return { ...task, columnId, position, status };
           }
           return task;
         });
+
+        // Теперь пересчитываем позиции для всех задач в целевой колонке
+        const tasksInTargetColumn = updatedTasks
+          .filter(task => task.columnId === columnId)
+          .sort((a, b) => a.position - b.position);
+
+        // Вставляем перетаскиваемую задачу на нужную позицию
+        const movedTask = tasksInTargetColumn.find(task => task.id === taskId);
+        if (movedTask) {
+          const otherTasks = tasksInTargetColumn.filter(task => task.id !== taskId);
+          
+          // Создаем новый массив с правильным порядком
+          const reorderedTasks = [
+            ...otherTasks.slice(0, position),
+            movedTask,
+            ...otherTasks.slice(position)
+          ];
+
+          // Обновляем позиции
+          reorderedTasks.forEach((task, index) => {
+            task.position = index;
+          });
+
+          // Заменяем задачи в основном массиве
+          updatedTasks = updatedTasks.map(task => {
+            if (task.columnId === columnId) {
+              const reorderedTask = reorderedTasks.find(rt => rt.id === task.id);
+              return reorderedTask || task;
+            }
+            return task;
+          });
+        }
         
         // Устанавливаем оптимистично обновлённые данные
         queryClient.setQueryData(["/api/columns", "tasks"], updatedTasks);

@@ -29,7 +29,7 @@ export function CreateColumnModal({ isOpen, onClose, onCreateColumn }: CreateCol
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md w-[calc(100vw-1rem)] sm:w-full" data-testid="create-column-modal">
+      <DialogContent className="max-w-md" data-testid="create-column-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />

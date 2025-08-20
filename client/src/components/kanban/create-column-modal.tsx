@@ -29,7 +29,7 @@ export function CreateColumnModal({ isOpen, onClose, onCreateColumn }: CreateCol
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md" data-testid="create-column-modal">
+      <DialogContent className="max-w-md w-[calc(100vw-2rem)] mx-4 sm:mx-auto" data-testid="create-column-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
@@ -40,7 +40,7 @@ export function CreateColumnModal({ isOpen, onClose, onCreateColumn }: CreateCol
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
             <label htmlFor="column-title" className="block text-sm font-medium mb-2">
               Column Title *
@@ -55,7 +55,7 @@ export function CreateColumnModal({ isOpen, onClose, onCreateColumn }: CreateCol
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 sm:pt-4">
             <Button
               type="button"
               variant="outline"

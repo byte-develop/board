@@ -50,7 +50,7 @@ export function CreateTaskModal({ isOpen, onClose, onCreateTask, columnId }: Cre
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md" data-testid="create-task-modal">
+      <DialogContent className="max-w-md w-[calc(100vw-2rem)] mx-4 sm:mx-auto" data-testid="create-task-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
@@ -61,7 +61,7 @@ export function CreateTaskModal({ isOpen, onClose, onCreateTask, columnId }: Cre
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
             <label htmlFor="task-title" className="block text-sm font-medium mb-2">
               Task Title *
@@ -106,7 +106,7 @@ export function CreateTaskModal({ isOpen, onClose, onCreateTask, columnId }: Cre
             </Select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 sm:pt-4">
             <Button
               type="button"
               variant="outline"

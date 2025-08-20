@@ -141,7 +141,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
         <DialogHeader className="space-y-4">
           <DialogTitle className="sr-only">Edit Task</DialogTitle>
           <DialogDescription className="sr-only">
@@ -189,7 +189,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Description */}
           <div>
             <label className="block text-sm font-medium mb-2">Description</label>
@@ -202,7 +202,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
           </div>
 
           {/* Due Date and Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Due Date</label>
               <Input
@@ -246,7 +246,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
                 ))}
               </AnimatePresence>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <Input
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
@@ -287,7 +287,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
               </AnimatePresence>
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 Y
               </div>
@@ -317,17 +317,18 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between pt-6 border-t">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4 sm:pt-6 border-t">
           <Button
             variant="destructive"
             onClick={handleDelete}
             disabled={deleteTaskMutation.isPending}
+            className="order-2 sm:order-1"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete Task
           </Button>
           
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 order-1 sm:order-2">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>

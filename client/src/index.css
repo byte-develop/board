@@ -100,13 +100,18 @@
     @apply border-border;
   }
   
+  html, body {
+    @apply min-h-screen h-full;
+    scroll-behavior: smooth;
+  }
+  
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   
-  html {
-    scroll-behavior: smooth;
+  #root {
+    @apply min-h-screen h-full;
   }
 }
 

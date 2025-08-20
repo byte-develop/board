@@ -286,6 +286,173 @@
   transition: none !important;
 }
 
+/* Mobile-first responsive design */
+@media (max-width: 640px) {
+  /* Mobile optimizations */
+  body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Improve touch targets */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Better scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Mobile-specific card spacing */
+  .task-card-mobile {
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Sticky header on mobile */
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet-specific layout */
+  .tablet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* Touch-friendly buttons on tablet */
+  button {
+    min-height: 40px;
+    touch-action: manipulation;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1025px) {
+  /* Hover effects only on desktop */
+  .desktop-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Better scrollbars on desktop */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Enhanced animations for better performance */
+@media (prefers-reduced-motion: no-preference) {
+  .smooth-animation {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .bounce-animation {
+    animation: bounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  @keyframes bounce {
+    0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+    50% { transform: scale(1.02) translateY(-2px); opacity: 0.8; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card-border {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+  
+  .text-muted {
+    opacity: 0.8;
+  }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --glow-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark-glow {
+    box-shadow: 0 0 20px var(--glow-color);
+  }
+}
+
+/* Focus improvements for accessibility */
+*:focus-visible {
+  outline: 2px solid rgb(59 130 246);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Better mobile menu */
+@media (max-width: 640px) {
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+  }
+  
+  .mobile-menu-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-menu-content.open {
+    transform: translateY(0);
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print {

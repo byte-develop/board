@@ -20,6 +20,8 @@ export function KanbanBoard() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [isMiniMapOpen, setIsMiniMapOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileStatsOpen, setIsMobileStatsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -269,99 +271,109 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 transition-all duration-500">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 transition-all duration-500 mobile-scroll">
       {/* Header */}
-      <header className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-6 py-4 shadow-sm">
+      <header className="mobile-header bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25">
-                <Bot className="text-white w-5 h-5" />
+          <div className="flex items-center space-x-3 sm:space-x-6 flex-1">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25">
+                <Bot className="text-white w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
                   Hyper-Kanban
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5">Project Management</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5 hidden sm:block">Project Management</p>
               </div>
             </div>
             
-            {/* Board Statistics */}
-            <div className="hidden lg:flex items-center space-x-1 ml-8 bg-gray-50/80 dark:bg-slate-700/30 rounded-2xl px-4 py-2.5 border border-gray-200/50 dark:border-slate-600/50">
-              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50">
-                <div className="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-sm shadow-blue-500/50"></div>
+            {/* Board Statistics - Hidden on mobile, shows on tablet+ */}
+            <div className="hidden xl:flex items-center space-x-1 ml-4 bg-gray-50/80 dark:bg-slate-700/30 rounded-2xl px-3 py-2 border border-gray-200/50 dark:border-slate-600/50">
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-lg bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50">
+                <div className="w-2 h-2 bg-blue-500 rounded-full shadow-sm shadow-blue-500/50"></div>
                 <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Backlog</span>
-                <span className="text-sm font-bold text-blue-900 dark:text-blue-100 bg-blue-100/80 dark:bg-blue-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.backlog}</span>
+                <span className="text-xs font-bold text-blue-900 dark:text-blue-100 bg-blue-100/80 dark:bg-blue-800/50 px-1.5 py-0.5 rounded min-w-[20px] text-center">{stats.backlog}</span>
               </div>
-              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
-                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-sm shadow-amber-500/50"></div>
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-lg bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
+                <div className="w-2 h-2 bg-amber-500 rounded-full shadow-sm shadow-amber-500/50"></div>
                 <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Active</span>
-                <span className="text-sm font-bold text-amber-900 dark:text-amber-100 bg-amber-100/80 dark:bg-amber-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.inProgress}</span>
+                <span className="text-xs font-bold text-amber-900 dark:text-amber-100 bg-amber-100/80 dark:bg-amber-800/50 px-1.5 py-0.5 rounded min-w-[20px] text-center">{stats.inProgress}</span>
               </div>
-              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-orange-50/80 dark:bg-orange-900/20 border border-orange-200/50 dark:border-orange-700/50">
-                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full shadow-sm shadow-orange-500/50"></div>
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-900/20 border border-orange-200/50 dark:border-orange-700/50">
+                <div className="w-2 h-2 bg-orange-500 rounded-full shadow-sm shadow-orange-500/50"></div>
                 <span className="text-xs font-medium text-orange-700 dark:text-orange-300">Review</span>
-                <span className="text-sm font-bold text-orange-900 dark:text-orange-100 bg-orange-100/80 dark:bg-orange-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.review}</span>
+                <span className="text-xs font-bold text-orange-900 dark:text-orange-100 bg-orange-100/80 dark:bg-orange-800/50 px-1.5 py-0.5 rounded min-w-[20px] text-center">{stats.review}</span>
               </div>
-              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
-                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-sm shadow-emerald-500/50"></div>
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-lg bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-sm shadow-emerald-500/50"></div>
                 <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Done</span>
-                <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100 bg-emerald-100/80 dark:bg-emerald-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.done}</span>
+                <span className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bg-emerald-100/80 dark:bg-emerald-800/50 px-1.5 py-0.5 rounded min-w-[20px] text-center">{stats.done}</span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="relative hidden md:block">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Search - Hidden on mobile, shows on larger screens */}
+            <div className="relative hidden lg:block">
               <Input
                 type="text"
-                placeholder="Search tasks, tags..."
+                placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-4 w-72 bg-white/80 dark:bg-slate-700/80 border-gray-200/60 dark:border-slate-600/60 focus:bg-white dark:focus:bg-slate-600 focus:border-blue-400 dark:focus:border-purple-400 focus:ring-2 focus:ring-blue-400/20 dark:focus:ring-purple-400/20 rounded-xl shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="pl-11 pr-4 w-48 xl:w-72 bg-white/80 dark:bg-slate-700/80 border-gray-200/60 dark:border-slate-600/60 focus:bg-white dark:focus:bg-slate-600 focus:border-blue-400 dark:focus:border-purple-400 focus:ring-2 focus:ring-blue-400/20 dark:focus:ring-purple-400/20 rounded-xl shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             </div>
             
+            {/* Mobile search button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileSearchOpen(true)}
+              className="lg:hidden h-9 w-9 p-0 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 transition-all duration-200"
+            >
+              <Search className="w-4 h-4" />
+            </Button>
+            
             {/* Controls */}
-            <div className="flex items-center space-x-2 bg-white/60 dark:bg-slate-700/60 rounded-2xl p-1.5 border border-gray-200/50 dark:border-slate-600/50 shadow-sm">
+            <div className="flex items-center space-x-1 sm:space-x-2 bg-white/60 dark:bg-slate-700/60 rounded-2xl p-1 sm:p-1.5 border border-gray-200/50 dark:border-slate-600/50 shadow-sm">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)}
-                className={`h-9 w-9 p-0 rounded-xl transition-all duration-200 ${
+                className={`h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl transition-all duration-200 ${
                   isAiAssistantOpen 
                     ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
                     : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                 }`}
                 title="AI Assistant"
               >
-                <Bot className="w-4 h-4" />
+                <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className="h-9 w-9 p-0 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 transition-all duration-200"
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 transition-all duration-200"
                 title="Toggle Theme"
               >
-                {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                {theme === "light" ? <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMiniMapOpen(!isMiniMapOpen)}
-                className={`h-9 w-9 p-0 rounded-xl transition-all duration-200 ${
+                className={`h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl transition-all duration-200 ${
                   isMiniMapOpen 
                     ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30' 
                     : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
                 }`}
                 title="Board Analytics"
               >
-                <Map className="w-4 h-4" />
+                <Map className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
@@ -369,9 +381,10 @@ export function KanbanBoard() {
       </header>
 
       {/* Main Board */}
-      <main className="flex-1 p-4">
+      <main className="flex-1 p-3 sm:p-4 lg:p-6">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex flex-wrap gap-6 min-h-full">
+          {/* Mobile: Vertical scroll, Tablet+: Horizontal scroll/wrap */}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap xl:flex-nowrap gap-4 sm:gap-6 min-h-full overflow-x-auto sm:overflow-x-visible xl:overflow-x-auto custom-scrollbar mobile-scroll">
             {columns.map((column: Column, index: number) => (
               <KanbanColumn
                 key={column.id}
@@ -385,7 +398,7 @@ export function KanbanBoard() {
                   
             
             {/* Add Column Button */}
-            <div className="w-80">
+            <div className="w-full sm:w-80 flex-shrink-0">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -400,6 +413,139 @@ export function KanbanBoard() {
             </div>
           </div>
         </DragDropContext>
+        
+        {/* Mobile Statistics - Shows condensed stats for mobile */}
+        <div className="sm:hidden fixed bottom-4 left-4 right-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-lg p-3 z-40">
+          <button
+            onClick={() => setIsMobileStatsOpen(!isMobileStatsOpen)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Bot className="text-white w-3 h-3" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Board Stats</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {stats.total} tasks • {Math.round((stats.done / stats.total) * 100) || 0}% complete
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+            </div>
+          </button>
+          
+          {isMobileStatsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-3 pt-3 border-t border-gray-200/50 dark:border-slate-700/50 grid grid-cols-4 gap-2"
+            >
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mx-auto mb-1">
+                  <span className="text-blue-600 dark:text-blue-400 text-xs font-bold">{stats.backlog}</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Backlog</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center mx-auto mb-1">
+                  <span className="text-amber-600 dark:text-amber-400 text-xs font-bold">{stats.inProgress}</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Active</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/50 rounded-lg flex items-center justify-center mx-auto mb-1">
+                  <span className="text-orange-600 dark:text-orange-400 text-xs font-bold">{stats.review}</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Review</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex items-center justify-center mx-auto mb-1">
+                  <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">{stats.done}</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Done</p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+        
+        {/* Mobile Search Modal */}
+        {isMobileSearchOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-16">
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl m-4 w-full max-w-md overflow-hidden"
+            >
+              <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Search Tasks</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsMobileSearchOpen(false)}
+                    className="h-8 w-8 p-0 rounded-lg"
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Search tasks, tags..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-11 pr-4 bg-gray-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 rounded-xl"
+                    autoFocus
+                  />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                </div>
+              </div>
+              
+              {searchQuery && (
+                <div className="p-4 max-h-60 overflow-y-auto">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    Found {Object.values(filteredTasksByColumn).flat().length} results
+                  </p>
+                  <div className="space-y-2">
+                    {Object.values(filteredTasksByColumn).flat().map((task) => (
+                      <div
+                        key={task.id}
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setIsTaskModalOpen(true);
+                          setIsMobileSearchOpen(false);
+                        }}
+                        className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        <h4 className="font-medium text-gray-900 dark:text-white text-sm">{task.title}</h4>
+                        {task.description && (
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{task.description}</p>
+                        )}
+                        <div className="flex items-center space-x-2 mt-2">
+                          <span className="text-xs bg-gray-200 dark:bg-slate-600 px-2 py-1 rounded">
+                            {columns.find(c => c.id === task.columnId)?.title}
+                          </span>
+                          {task.tags?.slice(0, 1).map(tag => (
+                            <span key={tag} className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
       </main>
 
       {/* Modals and Overlays */}

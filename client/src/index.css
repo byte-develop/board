@@ -100,18 +100,26 @@
     @apply border-border;
   }
   
-  html, body {
-    @apply min-h-screen h-full;
+  html {
+    height: 100%;
     scroll-behavior: smooth;
   }
   
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    height: 100%;
+    position: relative;
   }
   
   #root {
-    @apply min-h-screen h-full;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    height: 100%;
+    width: 100%;
+    position: relative;
   }
 }
 
@@ -127,6 +135,19 @@
   [data-rbd-draggable-id] {
     transition: none !important;
     position: static !important;
+  }
+  
+  /* Mobile viewport fixes */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+  
+  /* Fix for mobile viewport height issues */
+  @supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+      min-height: -webkit-fill-available;
+    }
   }
   
   [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id] {

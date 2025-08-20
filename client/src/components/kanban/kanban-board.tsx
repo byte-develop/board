@@ -276,7 +276,7 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen h-full bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 transition-all duration-500 mobile-scroll">
+    <div className="flex flex-col min-h-screen min-h-[100dvh] w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 transition-all duration-500 mobile-scroll relative">
       {/* Header */}
       <header className="mobile-header bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">

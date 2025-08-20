@@ -118,6 +118,24 @@
     border: 1px solid var(--glass-border);
   }
   
+  /* Smooth drag and drop */
+  [data-rbd-drag-handle-draggable-id] {
+    transform-origin: center;
+    will-change: transform;
+  }
+  
+  [data-rbd-draggable-id] {
+    transition: none !important;
+  }
+  
+  [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id] {
+    cursor: grab;
+  }
+  
+  [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id]:active {
+    cursor: grabbing;
+  }
+  
   /* Card hover glow effect */
   .card-hover-glow {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -234,7 +252,7 @@
 }
 
 /* Improved transitions */
-* {
+*:not([data-rbd-draggable-id]):not([data-rbd-drag-handle-draggable-id]) {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 

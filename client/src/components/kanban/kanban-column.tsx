@@ -32,7 +32,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
           {...provided.draggableProps}
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
+          transition={{ delay: index * 0.1, type: "spring", stiffness: 200, damping: 20 }}
           className="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
         >
           <div 
@@ -95,7 +95,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                     : ""
                 }`}
               >
-                <AnimatePresence>
+                <AnimatePresence mode="popLayout">
                   {tasks.map((task, taskIndex) => (
                     <Draggable key={task.id} draggableId={task.id} index={taskIndex}>
                       {(provided, snapshot) => (
@@ -103,6 +103,12 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            transform: snapshot.isDragging 
+                              ? provided.draggableProps.style?.transform 
+                              : provided.draggableProps.style?.transform
+                          }}
                         >
                           <TaskCard
                             task={task}
@@ -121,10 +127,12 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
                     className="h-24 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 flex items-center justify-center"
                   >
                     <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                      Drop task here
+                      📋 Drop task here
                     </span>
                   </motion.div>
                 )}

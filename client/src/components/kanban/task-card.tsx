@@ -52,27 +52,37 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
 
   return (
     <motion.div
-      layout
+      layout={!isDragging}
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+        rotate: isDragging ? 8 : 0,
+        scale: isDragging ? 1.05 : 1
+      }}
       exit={{ opacity: 0, y: -20 }}
-      whileHover={{ 
+      whileHover={!isDragging ? { 
         y: -4, 
         scale: 1.02,
         boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.2)"
-      }}
-      whileTap={{ scale: 0.98 }}
+      } : {}}
+      whileTap={!isDragging ? { scale: 0.98 } : {}}
       transition={{ 
         type: "spring", 
-        stiffness: 300, 
-        damping: 30 
+        stiffness: 260, 
+        damping: 20,
+        layout: { duration: 0.2 }
       }}
       className={cn(
-        "bg-gradient-to-r border-l-4 rounded-lg p-4 cursor-pointer shadow-sm transition-all duration-300",
+        "bg-gradient-to-r border-l-4 rounded-lg p-4 cursor-pointer shadow-sm",
         priorityStyles[task.priority as keyof typeof priorityStyles],
-        isDragging && "opacity-50 rotate-2 scale-105"
+        isDragging ? "opacity-90 shadow-2xl z-50" : "hover:shadow-lg transition-shadow duration-200"
       )}
-      onClick={() => onEdit(task)}
+      onClick={() => !isDragging && onEdit(task)}
+      style={{
+        transform: isDragging ? 'rotate(8deg) scale(1.05)' : undefined,
+        zIndex: isDragging ? 1000 : 1
+      }}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center space-x-2 flex-wrap">
@@ -108,7 +118,7 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
               className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${task.progress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              transition={isDragging ? { duration: 0 } : { duration: 1, ease: "easeOut" }}
             />
           </div>
           <div className="flex justify-between text-xs mt-1">

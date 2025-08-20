@@ -89,7 +89,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`p-4 space-y-3 min-h-96 max-h-full overflow-y-auto transition-colors duration-200 ${
+                className={`p-4 space-y-3 min-h-96 transition-colors duration-200 ${
                   snapshot.isDraggingOver 
                     ? "bg-blue-50/50 dark:bg-blue-900/10" 
                     : ""

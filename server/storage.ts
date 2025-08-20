@@ -98,6 +98,84 @@ export class MemStorage implements IStorage {
     defaultColumns.forEach(column => {
       this.columns.set(column.id, column);
     });
+
+    // Create sample tasks
+    const sampleTasks: Task[] = [
+      {
+        id: "task-1",
+        columnId: "backlog",
+        title: "Design new landing page",
+        description: "Create wireframes and mockups for the new company landing page",
+        priority: "high",
+        status: "backlog",
+        progress: 0,
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        tags: ["design", "ui/ux"],
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "task-2",
+        columnId: "backlog",
+        title: "Setup project database",
+        description: "Configure PostgreSQL database with initial tables",
+        priority: "medium",
+        status: "backlog",
+        progress: 0,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        tags: ["backend", "database"],
+        position: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "task-3",
+        columnId: "in-progress",
+        title: "Implement user authentication",
+        description: "Add login/register functionality with JWT tokens",
+        priority: "high",
+        status: "in-progress",
+        progress: 45,
+        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+        tags: ["backend", "auth"],
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "task-4",
+        columnId: "review",
+        title: "Code review for API endpoints",
+        description: "Review and test all REST API endpoints before deployment",
+        priority: "medium",
+        status: "review",
+        progress: 90,
+        dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
+        tags: ["review", "api"],
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "task-5",
+        columnId: "done",
+        title: "Project initialization",
+        description: "Setup basic project structure and dependencies",
+        priority: "low",
+        status: "done",
+        progress: 100,
+        dueDate: null,
+        tags: ["setup"],
+        position: 0,
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+        updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      },
+    ];
+
+    sampleTasks.forEach(task => {
+      this.tasks.set(task.id, task);
+    });
   }
 
   // Board operations

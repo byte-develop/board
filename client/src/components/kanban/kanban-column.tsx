@@ -22,7 +22,10 @@ const columnColors = {
 };
 
 export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: KanbanColumnProps) {
-  const completedTasks = tasks.filter(task => task.status === "done").length;
+  // Исправляем подсчет прогресса - используем progress поле или проверяем колонку "done"
+  const completedTasks = tasks.filter(task => 
+    task.columnId === "done" || task.progress === 100
+  ).length;
   const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
 
   return (
@@ -74,6 +77,10 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => {
+                    // Показываем меню колонки (можно добавить dropdown menu)
+                    console.log("Column menu for:", column.title);
+                  }}
                   className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/80 dark:hover:bg-slate-700/80 transition-all duration-200 touch-manipulation"
                 >
                   <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

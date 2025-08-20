@@ -48,7 +48,7 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: ["/api/columns"] });
       onSave(updatedTask);
-      toast({ title: "Task updated successfully" });
+      // Убираем уведомление при обновлении задач
     },
     onError: () => {
       toast({ title: "Failed to update task", variant: "destructive" });

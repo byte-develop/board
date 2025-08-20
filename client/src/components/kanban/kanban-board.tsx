@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/components/auth/auth-provider";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
-import { Plus, Search, Sun, Moon, Bot, Map } from "lucide-react";
+import { Plus, Search, Sun, Moon, Bot, Map, X, Kanban, LogOut } from "lucide-react";
 import { KanbanColumn } from "./kanban-column";
 import { TaskModal } from "./task-modal";
 import { AiAssistant } from "./ai-assistant";
@@ -23,6 +24,7 @@ export function KanbanBoard() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isMobileStatsOpen, setIsMobileStatsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -256,6 +258,9 @@ export function KanbanBoard() {
     inProgress: (tasksByColumn['in-progress'] || []).length,
     review: (tasksByColumn['review'] || []).length,
     done: (tasksByColumn['done'] || []).length,
+    get total() {
+      return this.backlog + this.inProgress + this.review + this.done;
+    }
   };
 
   if (columnsLoading || tasksLoading) {
@@ -277,14 +282,14 @@ export function KanbanBoard() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-3 sm:space-x-6 flex-1">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25">
-                <Bot className="text-white w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25 dark:shadow-cyan-500/25">
+                <Kanban className="text-white w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
-                  Hyper-Kanban
+                  TaskFlow Pro
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5 hidden sm:block">Project Management</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5 hidden sm:block">Smart Project Management</p>
               </div>
             </div>
             
@@ -374,6 +379,16 @@ export function KanbanBoard() {
                 title="Board Analytics"
               >
                 <Map className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => logout()}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-all duration-200"
+                title={`Sign out (${user?.firstName} ${user?.lastName})`}
+              >
+                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
@@ -492,7 +507,7 @@ export function KanbanBoard() {
                     onClick={() => setIsMobileSearchOpen(false)}
                     className="h-8 w-8 p-0 rounded-lg"
                   >
-                    ✕
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
                 <div className="relative">

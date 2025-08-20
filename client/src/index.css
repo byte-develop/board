@@ -405,14 +405,28 @@
 }
 
 /* Dark mode improvements */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --shadow-color: rgba(0, 0, 0, 0.5);
-    --glow-color: rgba(255, 255, 255, 0.1);
+.dark {
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --glow-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .dark-glow {
+  box-shadow: 0 0 20px var(--glow-color);
+}
+
+/* Better dark mode gradients on mobile */
+@media (max-width: 640px) {
+  .dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
   }
   
-  .dark-glow {
-    box-shadow: 0 0 20px var(--glow-color);
+  .dark .mobile-header {
+    background: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(16px);
+  }
+  
+  .dark .mobile-scroll {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   }
 }
 
@@ -446,6 +460,10 @@
     padding: 24px;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .dark .mobile-menu-content {
+    background: #1e293b;
   }
   
   .mobile-menu-content.open {

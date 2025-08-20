@@ -276,6 +276,16 @@
   cursor: grabbing !important;
 }
 
+/* Smooth dragging - reduce jankiness */
+[data-rbd-draggable-id] {
+  transition: none !important;
+}
+
+/* Ensure smooth drag animations */
+[data-rbd-draggable-id] * {
+  transition: none !important;
+}
+
 /* Print styles */
 @media print {
   .no-print {

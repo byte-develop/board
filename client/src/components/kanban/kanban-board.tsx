@@ -48,7 +48,7 @@ export function KanbanBoard() {
     enabled: columns.length > 0,
   });
 
-  // Group tasks by column
+  // Group tasks by column and sort by position
   const tasksByColumn = allTasks.reduce((acc: Record<string, Task[]>, task: Task) => {
     if (!acc[task.columnId]) {
       acc[task.columnId] = [];
@@ -57,13 +57,20 @@ export function KanbanBoard() {
     return acc;
   }, {});
 
-  // Filter tasks based on search query
+  // Sort tasks by position within each column
+  Object.keys(tasksByColumn).forEach(columnId => {
+    tasksByColumn[columnId].sort((a, b) => a.position - b.position);
+  });
+
+  // Filter tasks based on search query and maintain position sorting
   const filteredTasksByColumn = Object.keys(tasksByColumn).reduce((acc: Record<string, Task[]>, columnId) => {
-    acc[columnId] = tasksByColumn[columnId].filter(task =>
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    acc[columnId] = tasksByColumn[columnId]
+      .filter(task =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .sort((a, b) => a.position - b.position);
     return acc;
   }, {});
 
@@ -83,7 +90,7 @@ export function KanbanBoard() {
       
       return response.json();
     },
-    // Оптимистичное обновление - сразу обновляем UI
+    // Простое оптимистичное обновление
     onMutate: async ({ taskId, columnId, position }) => {
       // Отменяем любые исходящие refetch запросы
       await queryClient.cancelQueries({ queryKey: ["/api/columns", "tasks"] });
@@ -97,47 +104,15 @@ export function KanbanBoard() {
         else if (columnId === "review") status = "review";
         else if (columnId === "done") status = "done";
 
-        // Сначала обновляем перетаскиваемую задачу
-        let updatedTasks = previousTasks.map(task => {
+        // Просто обновляем задачу с новыми данными
+        const updatedTasks = previousTasks.map(task => {
           if (task.id === taskId) {
             return { ...task, columnId, position, status };
           }
           return task;
         });
-
-        // Теперь пересчитываем позиции для всех задач в целевой колонке
-        const tasksInTargetColumn = updatedTasks
-          .filter(task => task.columnId === columnId)
-          .sort((a, b) => a.position - b.position);
-
-        // Вставляем перетаскиваемую задачу на нужную позицию
-        const movedTask = tasksInTargetColumn.find(task => task.id === taskId);
-        if (movedTask) {
-          const otherTasks = tasksInTargetColumn.filter(task => task.id !== taskId);
-          
-          // Создаем новый массив с правильным порядком
-          const reorderedTasks = [
-            ...otherTasks.slice(0, position),
-            movedTask,
-            ...otherTasks.slice(position)
-          ];
-
-          // Обновляем позиции
-          reorderedTasks.forEach((task, index) => {
-            task.position = index;
-          });
-
-          // Заменяем задачи в основном массиве
-          updatedTasks = updatedTasks.map(task => {
-            if (task.columnId === columnId) {
-              const reorderedTask = reorderedTasks.find(rt => rt.id === task.id);
-              return reorderedTask || task;
-            }
-            return task;
-          });
-        }
         
-        // Устанавливаем оптимистично обновлённые данные
+        // Устанавливаем обновлённые данные
         queryClient.setQueryData(["/api/columns", "tasks"], updatedTasks);
       }
       

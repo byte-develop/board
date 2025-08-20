@@ -271,81 +271,99 @@ export function KanbanBoard() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 transition-all duration-500">
       {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-700 px-4 py-3">
+      <header className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Bot className="text-white text-sm" />
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25">
+                <Bot className="text-white w-5 h-5" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hyper-Kanban</h1>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                  Hyper-Kanban
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5">Project Management</p>
+              </div>
             </div>
             
             {/* Board Statistics */}
-            <div className="hidden md:flex items-center space-x-6 ml-8">
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span className="text-gray-600 dark:text-gray-400">Backlog:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{stats.backlog}</span>
+            <div className="hidden lg:flex items-center space-x-1 ml-8 bg-gray-50/80 dark:bg-slate-700/30 rounded-2xl px-4 py-2.5 border border-gray-200/50 dark:border-slate-600/50">
+              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50">
+                <div className="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-sm shadow-blue-500/50"></div>
+                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Backlog</span>
+                <span className="text-sm font-bold text-blue-900 dark:text-blue-100 bg-blue-100/80 dark:bg-blue-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.backlog}</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                <span className="text-gray-600 dark:text-gray-400">In Progress:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{stats.inProgress}</span>
+              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
+                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-sm shadow-amber-500/50"></div>
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Active</span>
+                <span className="text-sm font-bold text-amber-900 dark:text-amber-100 bg-amber-100/80 dark:bg-amber-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.inProgress}</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                <span className="text-gray-600 dark:text-gray-400">Review:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{stats.review}</span>
+              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-orange-50/80 dark:bg-orange-900/20 border border-orange-200/50 dark:border-orange-700/50">
+                <div className="w-2.5 h-2.5 bg-orange-500 rounded-full shadow-sm shadow-orange-500/50"></div>
+                <span className="text-xs font-medium text-orange-700 dark:text-orange-300">Review</span>
+                <span className="text-sm font-bold text-orange-900 dark:text-orange-100 bg-orange-100/80 dark:bg-orange-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.review}</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                <span className="text-gray-600 dark:text-gray-400">Done:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{stats.done}</span>
+              <div className="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
+                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-sm shadow-emerald-500/50"></div>
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Done</span>
+                <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100 bg-emerald-100/80 dark:bg-emerald-800/50 px-2 py-0.5 rounded-lg min-w-[24px] text-center">{stats.done}</span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             {/* Search */}
             <div className="relative hidden md:block">
               <Input
                 type="text"
-                placeholder="Search tasks..."
+                placeholder="Search tasks, tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64 bg-gray-100 dark:bg-slate-700 border-transparent focus:bg-white dark:focus:bg-slate-600"
+                className="pl-11 pr-4 w-72 bg-white/80 dark:bg-slate-700/80 border-gray-200/60 dark:border-slate-600/60 focus:bg-white dark:focus:bg-slate-600 focus:border-blue-400 dark:focus:border-purple-400 focus:ring-2 focus:ring-blue-400/20 dark:focus:ring-purple-400/20 rounded-xl shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             </div>
             
             {/* Controls */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)}
-              className="bg-white/50 dark:bg-slate-700/50 hover:bg-blue-500/10 dark:hover:bg-purple-500/10"
-            >
-              <Bot className="w-4 h-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="bg-white/50 dark:bg-slate-700/50 hover:bg-yellow-500/10"
-            >
-              {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMiniMapOpen(!isMiniMapOpen)}
-              className="bg-white/50 dark:bg-slate-700/50 hover:bg-emerald-500/10"
-            >
-              <Map className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center space-x-2 bg-white/60 dark:bg-slate-700/60 rounded-2xl p-1.5 border border-gray-200/50 dark:border-slate-600/50 shadow-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)}
+                className={`h-9 w-9 p-0 rounded-xl transition-all duration-200 ${
+                  isAiAssistantOpen 
+                    ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
+                    : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                }`}
+                title="AI Assistant"
+              >
+                <Bot className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="h-9 w-9 p-0 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 transition-all duration-200"
+                title="Toggle Theme"
+              >
+                {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMiniMapOpen(!isMiniMapOpen)}
+                className={`h-9 w-9 p-0 rounded-xl transition-all duration-200 ${
+                  isMiniMapOpen 
+                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30' 
+                    : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                }`}
+                title="Board Analytics"
+              >
+                <Map className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>

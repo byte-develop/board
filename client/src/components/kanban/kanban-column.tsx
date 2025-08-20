@@ -30,20 +30,31 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, type: "spring", stiffness: 200, damping: 20 }}
-      className="w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
+      className="w-80 bg-gradient-to-b from-white/80 to-white/60 dark:from-slate-800/80 dark:to-slate-800/60 backdrop-blur-md rounded-2xl border border-gray-200/40 dark:border-slate-700/40 shadow-xl shadow-black/5 dark:shadow-black/20 hover:shadow-2xl transition-all duration-300"
     >
-      <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+      <div className="p-5 border-b border-gray-200/30 dark:border-slate-700/30 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-slate-700/20">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: column.color }}
-                />
-                <h3 className="font-semibold text-gray-900 dark:text-white">{column.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <div 
+                    className="w-4 h-4 rounded-full shadow-lg"
+                    style={{ backgroundColor: column.color, boxShadow: `0 0 20px ${column.color}40` }}
+                  />
+                  <div 
+                    className="absolute inset-0 w-4 h-4 rounded-full animate-pulse"
+                    style={{ backgroundColor: column.color, opacity: 0.3 }}
+                  />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-lg">{column.title}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    {tasks.length} task{tasks.length !== 1 ? 's' : ''} • {Math.round(progress)}% complete
+                  </p>
+                </div>
+                <span className={`text-xs px-3 py-1.5 rounded-xl font-bold shadow-sm border ${
                   columnColors[column.color as keyof typeof columnColors] || 
                   "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                }`}>
+                } border-white/50 dark:border-slate-600/50`}>
                   {tasks.length}
                 </span>
               </div>
@@ -52,28 +63,34 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                   variant="ghost"
                   size="sm"
                   onClick={() => onAddTask(column.id)}
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="h-9 w-9 p-0 rounded-xl hover:bg-white/80 dark:hover:bg-slate-700/80 transition-all duration-200 group"
+                  style={{ 
+                    color: column.color,
+                    ['--tw-ring-color' as any]: `${column.color}40`
+                  }}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-4 w-4 group-hover:scale-110 transition-transform" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="h-9 w-9 p-0 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/80 dark:hover:bg-slate-700/80 transition-all duration-200"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
             </div>
             
-            {/* Progress Bar */}
-            <div className="mt-3 bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+            {/* Enhanced Progress Bar */}
+            <div className="mt-4 bg-gray-200/60 dark:bg-slate-700/60 rounded-full h-2 overflow-hidden backdrop-blur-sm">
               <motion.div 
-                className="h-full rounded-full"
-                style={{ backgroundColor: column.color }}
+                className="h-full rounded-full shadow-sm"
+                style={{ 
+                  background: `linear-gradient(90deg, ${column.color}CC, ${column.color})`
+                }}
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </div>
           </div>
@@ -83,10 +100,10 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`p-4 min-h-96 transition-colors duration-200 ${
+                className={`p-5 min-h-96 transition-all duration-300 rounded-b-2xl ${
                   snapshot.isDraggingOver 
-                    ? "bg-blue-50/50 dark:bg-blue-900/10" 
-                    : ""
+                    ? "bg-gradient-to-b from-blue-50/60 to-blue-100/40 dark:from-blue-900/20 dark:to-blue-800/10 shadow-inner" 
+                    : "hover:bg-gray-50/30 dark:hover:bg-slate-700/20"
                 }`}
                 style={{
                   // Убираем любые transform стили, которые могут мешать

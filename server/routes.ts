@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTaskSchema, insertColumnSchema, insertCommentSchema, insertDependencySchema } from "@shared/schema";
+import { registerSchema, loginSchema } from "@shared/auth-schema";
+import { AuthService } from "./auth";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ 
@@ -9,6 +11,86 @@ const openai = new OpenAI({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Auth routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = registerSchema.parse(req.body);
+      const user = await AuthService.register(
+        validatedData.email,
+        validatedData.password,
+        validatedData.firstName,
+        validatedData.lastName
+      );
+      
+      // Automatically log in after registration
+      const { user: loggedInUser, sessionId } = await AuthService.login(validatedData.email, validatedData.password);
+      
+      // Set session cookie
+      req.session.sessionId = sessionId;
+      
+      res.status(201).json({ user: loggedInUser });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      const { user, sessionId } = await AuthService.login(validatedData.email, validatedData.password);
+      
+      // Set session cookie
+      req.session.sessionId = sessionId;
+      
+      res.json({ user });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(401).json({ message: error instanceof Error ? error.message : "Login failed" });
+    }
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const sessionId = req.session.sessionId;
+      if (!sessionId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user = await AuthService.getUserBySession(sessionId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      res.json({ user });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const sessionId = req.session.sessionId;
+      
+      if (sessionId) {
+        await AuthService.logout(sessionId);
+      }
+      
+      // Clear session
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+        }
+      });
+      
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
   
   // Board routes
   app.get("/api/boards", async (req, res) => {

@@ -1,7 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from 'express-session';
 import { registerRoutes } from "./routes";
 import config from "./config";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Extend the Request type to include session
+declare module 'express-session' {
+  interface SessionData {
+    sessionId: string;
+  }
+}
 
 const app = express();
 
@@ -21,6 +29,20 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Session configuration
+app.use(session({
+  secret: config.session.secret,
+  name: config.session.name,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: config.session.maxAge,
+    secure: config.session.secure,
+    httpOnly: config.session.httpOnly,
+    sameSite: config.session.sameSite as 'lax' | 'strict' | 'none'
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

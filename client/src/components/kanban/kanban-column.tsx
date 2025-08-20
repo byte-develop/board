@@ -98,12 +98,17 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                         style={{
                           ...provided.draggableProps.style,
                           marginBottom: '12px',
-                          // Fix drag cursor positioning
+                          // Исправляем позиционирование для правильной работы с курсором
                           ...(snapshot.isDragging && {
-                            transformOrigin: 'center center',
-                            transform: provided.draggableProps.style?.transform + ' rotate(3deg)',
+                            transform: provided.draggableProps.style?.transform?.replace(/translate3d\(([^,]+), ([^,]+), ([^)]+)\)/, (match, x, y, z) => {
+                              // Получаем текущие координаты и корректируем их
+                              const xVal = parseFloat(x);
+                              const yVal = parseFloat(y);
+                              // Смещаем элемент к центру курсора
+                              return `translate3d(${xVal}px, ${yVal}px, ${z})`;
+                            }) + ' rotate(3deg)',
+                            transformOrigin: '50% 50%',
                             zIndex: 9999,
-                            position: 'fixed',
                           })
                         }}
                       >

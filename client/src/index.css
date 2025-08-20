@@ -267,26 +267,39 @@
   transition: none !important;
 }
 
-/* Fix drag cursor positioning - force center positioning for consistent behavior */
-[data-rbd-draggable-id] {
-  transform-origin: center center !important;
-}
-
-/* Fix dragging element positioning by overriding library styles */
-[data-rbd-draggable-id][data-rbd-draggable-context-id] {
-  position: fixed !important;
-  transform-origin: center center !important;
-  z-index: 9999 !important;
-}
-
-/* Force consistent positioning during drag */
-div[data-rbd-draggable-id][style*="transform: translate3d"] {
-  transform-origin: center center !important;
-}
-
-/* Ensure all drag handles use center origin */
+/* Fix drag cursor positioning by overriding library defaults */
 [data-rbd-drag-handle-draggable-id] {
+  cursor: grab !important;
+}
+
+[data-rbd-drag-handle-draggable-id]:active {
+  cursor: grabbing !important;
+}
+
+/* Исправляем позиционирование перетаскиваемых элементов Hello Pangea DnD */
+div[data-rbd-draggable-id] {
+  will-change: transform !important;
+}
+
+/* Агрессивное исправление для всех элементов во время drag */
+body.rbd-dragging div[data-rbd-draggable-id] {
   transform-origin: center center !important;
+}
+
+/* Исправляем позицию drag элемента */
+[data-rbd-drag-handle-context-id] div[data-rbd-draggable-id] {
+  transform-origin: center center !important;
+}
+
+/* Перехватываем все inline стили с transform */
+div[style*="translate3d"] {
+  transform-origin: center center !important;
+}
+
+/* Специфичный fix для drag ghost */
+div[data-rbd-draggable-id][data-rbd-draggable-context-id] {
+  transform-origin: center center !important;
+  pointer-events: none !important;
 }
 
 /* Print styles */

@@ -25,8 +25,9 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
   const formatDueDate = (date: Date | null) => {
     if (!date) return "No due date";
     
+    const dateObj = new Date(date);
     const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
+    const diffTime = dateObj.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) return "Due today";
@@ -39,8 +40,9 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
   const getDueDateColor = (date: Date | null) => {
     if (!date) return "text-gray-500 dark:text-gray-400";
     
+    const dateObj = new Date(date);
     const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
+    const diffTime = dateObj.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays <= 0) return "text-red-600 dark:text-red-400";

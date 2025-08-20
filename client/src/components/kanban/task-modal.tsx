@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Save, Trash2, Calendar, Tag, Link as LinkIcon, MessageCircle, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -143,6 +143,10 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-4">
+          <DialogTitle className="sr-only">Edit Task</DialogTitle>
+          <DialogDescription className="sr-only">
+            Edit task details, priority, status, and other properties
+          </DialogDescription>
           <div className="flex items-start justify-between">
             <Input
               value={editedTask.title}

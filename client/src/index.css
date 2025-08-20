@@ -119,33 +119,16 @@
   }
   
   /* Smooth drag and drop */
-  [data-rbd-drag-handle-draggable-id] {
-    transform-origin: center !important;
-    will-change: transform;
-  }
-  
   [data-rbd-draggable-id] {
     transition: none !important;
-    transform-origin: center !important;
   }
   
   [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id] {
-    cursor: grab !important;
+    cursor: grab;
   }
   
   [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id]:active {
-    cursor: grabbing !important;
-  }
-  
-  /* Override any conflicting transforms */
-  [data-rbd-draggable-id] * {
-    pointer-events: auto;
-  }
-  
-  /* Ensure dragging elements follow cursor precisely */
-  [data-rbd-draggable-id][data-is-dragging="true"] {
-    transform: none !important;
-    pointer-events: none;
+    cursor: grabbing;
   }
   
   /* Card hover glow effect */
@@ -268,8 +251,8 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Disable transitions during drag */
-[data-rbd-drag-handle-context-id] [data-rbd-draggable-id] * {
+/* Disable all transforms and transitions during drag */
+[data-rbd-drag-handle-context-id] * {
   transition: none !important;
 }
 

@@ -70,7 +70,17 @@ export function KanbanBoard() {
   // Mutations
   const moveTaskMutation = useMutation({
     mutationFn: async ({ taskId, columnId, position }: { taskId: string; columnId: string; position: number }) => {
+      // Also update the status to match the column
+      let status = "backlog";
+      if (columnId === "in-progress") status = "in-progress";
+      else if (columnId === "review") status = "review";
+      else if (columnId === "done") status = "done";
+      
       const response = await apiRequest("POST", `/api/tasks/${taskId}/move`, { columnId, position });
+      
+      // Update status to match new column
+      await apiRequest("PUT", `/api/tasks/${taskId}`, { status });
+      
       return response.json();
     },
     onSuccess: () => {
@@ -197,12 +207,12 @@ export function KanbanBoard() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [toggleTheme, isAiAssistantOpen]);
 
-  // Calculate stats
+  // Calculate stats based on actual column placement
   const stats = {
-    backlog: allTasks.filter(task => task.status === "backlog").length,
-    inProgress: allTasks.filter(task => task.status === "in-progress").length,
-    review: allTasks.filter(task => task.status === "review").length,
-    done: allTasks.filter(task => task.status === "done").length,
+    backlog: (tasksByColumn['backlog'] || []).length,
+    inProgress: (tasksByColumn['in-progress'] || []).length,
+    review: (tasksByColumn['review'] || []).length,
+    done: (tasksByColumn['done'] || []).length,
   };
 
   if (columnsLoading || tasksLoading) {

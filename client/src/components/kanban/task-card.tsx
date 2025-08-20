@@ -55,7 +55,7 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
     return (
       <div
         className={cn(
-          "bg-gradient-to-r border-l-4 rounded-lg p-4 cursor-grabbing shadow-lg transform rotate-3 scale-105 opacity-95",
+          "bg-gradient-to-r border-l-4 rounded-lg p-4 cursor-grabbing shadow-xl opacity-95",
           priorityStyles[task.priority as keyof typeof priorityStyles]
         )}
         onClick={() => onEdit(task)}
@@ -90,19 +90,10 @@ export function TaskCard({ task, onEdit, isDragging }: TaskCardProps) {
       {task.progress > 0 && (
         <div className="mb-3">
           <div className="bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-            {isDragging ? (
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full"
-                style={{ width: `${task.progress}%` }}
-              />
-            ) : (
-              <motion.div 
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${task.progress}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-              />
-            )}
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full"
+              style={{ width: `${task.progress}%` }}
+            />
           </div>
           <div className="flex justify-between text-xs mt-1">
             <span className="text-gray-500 dark:text-gray-400">Progress</span>

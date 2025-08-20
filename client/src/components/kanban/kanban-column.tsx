@@ -97,7 +97,13 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          marginBottom: '12px'
+                          marginBottom: '12px',
+                          // Fix drag cursor positioning by ensuring transform origin is consistent
+                          ...(snapshot.isDragging && {
+                            transformOrigin: 'top left',
+                            transform: provided.draggableProps.style?.transform + ' rotate(3deg)',
+                            zIndex: 1000,
+                          })
                         }}
                       >
                         <TaskCard

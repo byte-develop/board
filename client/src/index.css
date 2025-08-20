@@ -267,6 +267,27 @@
   transition: none !important;
 }
 
+/* Fix drag cursor positioning */
+[data-rbd-draggable-id] {
+  transform-origin: top left !important;
+}
+
+/* Ensure drag preview has consistent positioning */
+[data-rbd-draggable-id][data-rbd-draggable-context-id] {
+  position: relative !important;
+  transform-origin: top left !important;
+}
+
+/* Fix drag ghost element positioning */
+[data-rbd-draggable-id][style*="transform"] {
+  transform-origin: top left !important;
+}
+
+/* Override any transform origin that might cause offset issues */
+[data-rbd-drag-handle-draggable-id] {
+  transform-origin: top left !important;
+}
+
 /* Print styles */
 @media print {
   .no-print {

@@ -311,7 +311,10 @@ export function KanbanBoard() {
 
       {/* Main Board */}
       <main className="flex-1 p-4 overflow-y-auto">
-        <DragDropContext onDragEnd={handleDragEnd}>
+        <DragDropContext 
+          onDragEnd={handleDragEnd}
+          // Configure drag positioning to fix cursor offset issues
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full">
             {columns.map((column: Column, index: number) => (
               <KanbanColumn

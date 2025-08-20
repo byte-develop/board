@@ -137,16 +137,8 @@ export function KanbanBoard() {
     },
   });
 
-  const handleDragStart = () => {
-    // Устанавливаем CSS переменные для правильного позиционирования
-    document.documentElement.style.setProperty('--drag-transform-origin', 'center');
-  };
-
   const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
-    
-    // Убираем CSS переменные
-    document.documentElement.style.removeProperty('--drag-transform-origin');
 
     if (!destination) return;
 
@@ -319,11 +311,8 @@ export function KanbanBoard() {
 
       {/* Main Board */}
       <main className="flex-1 p-4 overflow-y-auto">
-        <DragDropContext 
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="flex flex-col lg:flex-row gap-6 min-h-full overflow-x-auto">
             {columns.map((column: Column, index: number) => (
               <KanbanColumn
                 key={column.id}
@@ -337,7 +326,7 @@ export function KanbanBoard() {
                   
             
             {/* Add Column Button */}
-            <div className="w-full">
+            <div className="w-80 flex-shrink-0">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

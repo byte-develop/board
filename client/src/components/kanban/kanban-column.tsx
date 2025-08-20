@@ -29,7 +29,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, type: "spring", stiffness: 200, damping: 20 }}
-      className="w-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
+      className="w-80 flex-shrink-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
     >
       <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
             <div className="flex items-center justify-between">
@@ -98,18 +98,6 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                         style={{
                           ...provided.draggableProps.style,
                           marginBottom: '12px',
-                          // Исправляем позиционирование для правильной работы с курсором
-                          ...(snapshot.isDragging && {
-                            transform: provided.draggableProps.style?.transform?.replace(/translate3d\(([^,]+), ([^,]+), ([^)]+)\)/, (match, x, y, z) => {
-                              // Получаем текущие координаты и корректируем их
-                              const xVal = parseFloat(x);
-                              const yVal = parseFloat(y);
-                              // Смещаем элемент к центру курсора
-                              return `translate3d(${xVal}px, ${yVal}px, ${z})`;
-                            }) + ' rotate(3deg)',
-                            transformOrigin: '50% 50%',
-                            zIndex: 9999,
-                          })
                         }}
                       >
                         <TaskCard

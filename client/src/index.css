@@ -267,39 +267,13 @@
   transition: none !important;
 }
 
-/* Fix drag cursor positioning by overriding library defaults */
+/* Simple drag cursor styling */
 [data-rbd-drag-handle-draggable-id] {
   cursor: grab !important;
 }
 
 [data-rbd-drag-handle-draggable-id]:active {
   cursor: grabbing !important;
-}
-
-/* Исправляем позиционирование перетаскиваемых элементов Hello Pangea DnD */
-div[data-rbd-draggable-id] {
-  will-change: transform !important;
-}
-
-/* Агрессивное исправление для всех элементов во время drag */
-body.rbd-dragging div[data-rbd-draggable-id] {
-  transform-origin: center center !important;
-}
-
-/* Исправляем позицию drag элемента */
-[data-rbd-drag-handle-context-id] div[data-rbd-draggable-id] {
-  transform-origin: center center !important;
-}
-
-/* Перехватываем все inline стили с transform */
-div[style*="translate3d"] {
-  transform-origin: center center !important;
-}
-
-/* Специфичный fix для drag ghost */
-div[data-rbd-draggable-id][data-rbd-draggable-context-id] {
-  transform-origin: center center !important;
-  pointer-events: none !important;
 }
 
 /* Print styles */

@@ -147,16 +147,14 @@ export function TaskModal({ task, isOpen, onClose, onSave, onDelete }: TaskModal
           <DialogDescription className="sr-only">
             Edit task details, priority, status, and other properties
           </DialogDescription>
-          <div className="flex items-start justify-between">
+          <div className="w-full">
             <Input
               value={editedTask.title}
               onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
               className="text-xl font-semibold border-none p-0 focus-visible:ring-0 bg-transparent"
               placeholder="Task title..."
+              data-testid="input-edit-task-title"
             />
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
           
           <div className="flex items-center space-x-2 flex-wrap">

@@ -5,6 +5,8 @@ import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import { Plus, Search, Sun, Moon, Bot, Map, X, Kanban, LogOut } from "lucide-react";
 import { KanbanColumn } from "./kanban-column";
 import { TaskModal } from "./task-modal";
+import { CreateTaskModal } from "./create-task-modal";
+import { CreateColumnModal } from "./create-column-modal";
 import { AiAssistant } from "./ai-assistant";
 import { MiniMap } from "./mini-map";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,9 @@ export function KanbanBoard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
+  const [isCreateColumnModalOpen, setIsCreateColumnModalOpen] = useState(false);
+  const [createTaskColumnId, setCreateTaskColumnId] = useState<string>("");
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [isMiniMapOpen, setIsMiniMapOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -137,15 +142,15 @@ export function KanbanBoard() {
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: async ({ columnId, title }: { columnId: string; title: string }) => {
-      const tasks = tasksByColumn[columnId] || [];
+    mutationFn: async (taskData: { columnId: string; title: string; description?: string; priority: string }) => {
+      const tasks = tasksByColumn[taskData.columnId] || [];
       const position = tasks.length;
       
       const response = await apiRequest("POST", "/api/tasks", {
-        columnId,
-        title,
-        description: "",
-        priority: "medium",
+        columnId: taskData.columnId,
+        title: taskData.title,
+        description: taskData.description || "",
+        priority: taskData.priority,
         status: "backlog",
         progress: 0,
         position,
@@ -153,10 +158,9 @@ export function KanbanBoard() {
       });
       return response.json();
     },
-    onSuccess: (newTask) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/columns", "tasks"] });
-      setSelectedTask(newTask);
-      setIsTaskModalOpen(true);
+      toast({ title: "Task created successfully" });
     },
     onError: () => {
       toast({ title: "Failed to create task", variant: "destructive" });
@@ -202,10 +206,8 @@ export function KanbanBoard() {
   };
 
   const handleAddTask = (columnId: string) => {
-    const title = prompt("Enter task title:");
-    if (title?.trim()) {
-      createTaskMutation.mutate({ columnId, title: title.trim() });
-    }
+    setCreateTaskColumnId(columnId);
+    setIsCreateTaskModalOpen(true);
   };
 
   const handleEditTask = (task: Task) => {
@@ -224,10 +226,15 @@ export function KanbanBoard() {
   };
 
   const handleAddColumn = () => {
-    const title = prompt("Enter column title:");
-    if (title?.trim()) {
-      createColumnMutation.mutate(title.trim());
-    }
+    setIsCreateColumnModalOpen(true);
+  };
+
+  const handleCreateTask = (taskData: { title: string; description?: string; priority: string; columnId: string; }) => {
+    createTaskMutation.mutate(taskData);
+  };
+
+  const handleCreateColumn = (title: string) => {
+    createColumnMutation.mutate(title);
   };
 
   // Keyboard shortcuts
@@ -243,6 +250,8 @@ export function KanbanBoard() {
       }
       if (e.key === "Escape") {
         setIsTaskModalOpen(false);
+        setIsCreateTaskModalOpen(false);
+        setIsCreateColumnModalOpen(false);
         setIsAiAssistantOpen(false);
         setIsMiniMapOpen(false);
       }
@@ -570,6 +579,19 @@ export function KanbanBoard() {
         onClose={() => setIsTaskModalOpen(false)}
         onSave={handleSaveTask}
         onDelete={handleDeleteTask}
+      />
+
+      <CreateTaskModal
+        isOpen={isCreateTaskModalOpen}
+        onClose={() => setIsCreateTaskModalOpen(false)}
+        onCreateTask={handleCreateTask}
+        columnId={createTaskColumnId}
+      />
+
+      <CreateColumnModal
+        isOpen={isCreateColumnModalOpen}
+        onClose={() => setIsCreateColumnModalOpen(false)}
+        onCreateColumn={handleCreateColumn}
       />
 
       <AiAssistant

@@ -121,6 +121,7 @@
   /* Smooth drag and drop */
   [data-rbd-draggable-id] {
     transition: none !important;
+    position: static !important;
   }
   
   [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id] {
@@ -129,6 +130,16 @@
   
   [data-rbd-draggable-id][data-rbd-drag-handle-draggable-id]:active {
     cursor: grabbing;
+  }
+  
+  /* Fix positioning for scrollable containers */
+  [data-rbd-droppable-id] {
+    position: static !important;
+  }
+  
+  /* Ensure proper positioning calculation */
+  [data-rbd-drag-handle-context-id] {
+    position: relative;
   }
   
   /* Card hover glow effect */

@@ -310,15 +310,16 @@ export function KanbanBoard() {
       </header>
 
       {/* Main Board */}
-      <main className="flex-1 overflow-x-auto p-4">
-        <div className="max-w-7xl mx-auto h-full">
-          <DragDropContext onDragEnd={handleDragEnd}>
+      <main className="flex-1 p-4 overflow-hidden">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="w-full h-full overflow-x-auto overflow-y-hidden">
             <Droppable droppableId="board" type="column" direction="horizontal">
               {(provided: any) => (
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="flex space-x-6 h-full min-w-fit"
+                  className="flex space-x-6 h-full"
+                  style={{ minWidth: '1200px', width: 'max-content' }}
                 >
                   {columns.map((column: Column, index: number) => (
                     <KanbanColumn
@@ -349,8 +350,8 @@ export function KanbanBoard() {
                 </div>
               )}
             </Droppable>
-          </DragDropContext>
-        </div>
+          </div>
+        </DragDropContext>
       </main>
 
       {/* Modals and Overlays */}

@@ -1,0 +1,1019 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper-Kanban - Interactive Task Board</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'bounce-subtle': 'bounceSubtle 0.6s ease-out',
+                        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+                        'shake': 'shake 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        bounceSubtle: {
+                            '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
+                            '40%': { transform: 'translateY(-4px)' },
+                            '60%': { transform: 'translateY(-2px)' },
+                        },
+                        glowPulse: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)' },
+                            '50%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.6)' },
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-2px)' },
+                            '75%': { transform: 'translateX(2px)' },
+                        }
+                    }
+                }
+            },
+            darkMode: 'class'
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .drag-placeholder {
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            border: 2px dashed #9ca3af;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .card-hover-glow {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover-glow:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+        .dark .card-hover-glow:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+        .dependency-line {
+            stroke-dasharray: 5;
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+        .mini-map {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .dark .mini-map {
+            background: rgba(15, 23, 42, 0.8);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass-effect {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900 min-h-screen transition-all duration-500">
+
+<!-- @COMPONENT: AppLayout [main application container] -->
+<div class="flex flex-col h-screen">
+    
+    <!-- @COMPONENT: TopNavigation [header with controls and theme toggle] -->
+    <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-700 px-4 py-3 transition-all duration-300">
+        <div class="flex items-center justify-between max-w-7xl mx-auto">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-columns text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">Hyper-Kanban</h1>
+                </div>
+                <!-- Board Statistics -->
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <div class="flex items-center space-x-2 text-sm">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span class="text-gray-600 dark:text-gray-400">Backlog: </span>
+                        <span class="font-medium text-gray-900 dark:text-white" data-bind="stats.backlog">4</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                        <span class="text-gray-600 dark:text-gray-400">In Progress: </span>
+                        <span class="font-medium text-gray-900 dark:text-white" data-bind="stats.inProgress">3</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        <span class="text-gray-600 dark:text-gray-400">Done: </span>
+                        <span class="font-medium text-gray-900 dark:text-white" data-bind="stats.done">8</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <!-- Search -->
+                <div class="relative hidden md:block">
+                    <input type="text" placeholder="Search tasks..." class="pl-10 pr-4 py-2 bg-gray-100 dark:bg-slate-700 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-sm w-64">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                </div>
+                
+                <!-- AI Assistant Toggle -->
+                <!-- @STATE: aiAssistantOpen:boolean = false -->
+                <button class="glass-effect hover:bg-blue-500/10 dark:hover:bg-purple-500/10 p-2 rounded-lg transition-all duration-200 group" data-event="click:toggleAI" title="AI Assistant">
+                    <i class="fas fa-robot text-gray-600 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-purple-400 transition-colors duration-200"></i>
+                </button>
+                
+                <!-- Theme Toggle -->
+                <!-- @STATE: isDarkMode:boolean = false -->
+                <button class="glass-effect hover:bg-yellow-500/10 p-2 rounded-lg transition-all duration-200 group" data-event="click:toggleTheme" title="Toggle Theme">
+                    <i class="fas fa-sun text-gray-600 dark:text-gray-400 group-hover:text-yellow-500 transition-colors duration-200 dark:hidden"></i>
+                    <i class="fas fa-moon text-gray-400 group-hover:text-blue-400 transition-colors duration-200 hidden dark:block"></i>
+                </button>
+                
+                <!-- Mini Map Toggle -->
+                <!-- @STATE: miniMapOpen:boolean = false -->
+                <button class="glass-effect hover:bg-emerald-500/10 p-2 rounded-lg transition-all duration-200 group" data-event="click:toggleMiniMap" title="Mini Map">
+                    <i class="fas fa-map text-gray-600 dark:text-gray-400 group-hover:text-emerald-500 transition-colors duration-200"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: TopNavigation -->
+
+    <!-- @COMPONENT: MainBoard [kanban board container] -->
+    <main class="flex-1 overflow-x-auto p-4">
+        <div class="max-w-7xl mx-auto h-full">
+            <!-- Board Container -->
+            <div class="flex space-x-6 h-full min-w-fit">
+                
+                <!-- @MAP: columns.map(column => ( -->
+                
+                <!-- @COMPONENT: KanbanColumn [individual column] -->
+                <!-- Backlog Column -->
+                <div class="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg animate-fade-in">
+                    <div class="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Backlog</h3>
+                                <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium">4</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:addCard">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-3 bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500" style="width: 25%" data-bind="column.progress"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 space-y-3 min-h-96 max-h-full overflow-y-auto" data-drop-zone="backlog">
+                        <!-- @MAP: backlogCards.map(card => ( -->
+                        
+                        <!-- High Priority Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-l-4 border-red-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="1" data-priority="high" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 text-xs px-2 py-1 rounded-full font-medium">High Priority</span>
+                                    <span class="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 text-xs px-2 py-1 rounded-full font-medium">UI/UX</span>
+                                </div>
+                                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                    <i class="fas fa-ellipsis-h text-sm"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Redesign user dashboard interface</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Update the main dashboard with new color scheme and improved navigation patterns</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due in 3 days</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">A</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Medium Priority Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-l-4 border-yellow-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="2" data-priority="medium" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full font-medium">Medium</span>
+                                    <span class="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full font-medium">Backend</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Implement user authentication system</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Set up JWT-based authentication with password reset functionality</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due in 1 week</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-medium">J</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Low Priority Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/50 dark:to-slate-800/50 border-l-4 border-gray-400 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="3" data-priority="low" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full font-medium">Low Priority</span>
+                                    <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium">Docs</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Update API documentation</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Comprehensive documentation for all endpoints with examples</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">No due date</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">M</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature Request Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-l-4 border-emerald-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="4" data-priority="medium" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">Feature</span>
+                                    <span class="bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200 text-xs px-2 py-1 rounded-full font-medium">Mobile</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Dark mode toggle implementation</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Add system-wide dark mode with smooth transitions and user preference storage</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due in 5 days</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-xs font-medium">S</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- @END_MAP )) -->
+                        
+                        <!-- Drag Placeholder -->
+                        <div class="drag-placeholder h-24 opacity-0 pointer-events-none"></div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: KanbanColumn -->
+                
+                <!-- In Progress Column -->
+                <div class="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">In Progress</h3>
+                                <span class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full font-medium">3</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:addCard">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3 bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+                            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-full rounded-full transition-all duration-500" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 space-y-3 min-h-96 max-h-full overflow-y-auto" data-drop-zone="in-progress">
+                        <!-- Active Development Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="5" data-priority="high" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium">In Development</span>
+                                    <span class="bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 text-xs px-2 py-1 rounded-full font-medium">Critical</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Payment gateway integration</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Integrate Stripe payment processing with webhook handling</p>
+                            <div class="flex items-center justify-between text-xs mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due tomorrow</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white text-xs font-medium">D</div>
+                                </div>
+                            </div>
+                            <!-- Progress indicator -->
+                            <div class="bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1">
+                                <span class="text-gray-500 dark:text-gray-400">Progress</span>
+                                <span class="text-blue-600 dark:text-blue-400 font-medium">75%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Testing Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border-l-4 border-purple-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="6" data-priority="medium" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 text-xs px-2 py-1 rounded-full font-medium">Testing</span>
+                                    <span class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full font-medium">QA</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">User registration flow testing</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">End-to-end testing of user onboarding process</p>
+                            <div class="flex items-center justify-between text-xs mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due in 2 days</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">T</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-purple-500 to-violet-500 h-full rounded-full transition-all duration-500" style="width: 45%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1">
+                                <span class="text-gray-500 dark:text-gray-400">Progress</span>
+                                <span class="text-purple-600 dark:text-purple-400 font-medium">45%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Review Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-l-4 border-emerald-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="7" data-priority="low" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">Code Review</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Email notification system</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Implement email templates and notification triggers</p>
+                            <div class="flex items-center justify-between text-xs mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                    <span class="text-gray-500 dark:text-gray-400">Due in 4 days</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-medium">R</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-emerald-500 to-green-500 h-full rounded-full transition-all duration-500" style="width: 90%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1">
+                                <span class="text-gray-500 dark:text-gray-400">Progress</span>
+                                <span class="text-emerald-600 dark:text-emerald-400 font-medium">90%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Review Column -->
+                <div class="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg animate-fade-in" style="animation-delay: 0.2s;">
+                    <div class="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Review</h3>
+                                <span class="bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 text-xs px-2 py-1 rounded-full font-medium">2</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:addCard">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3 bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+                            <div class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 space-y-3 min-h-96 max-h-full overflow-y-auto" data-drop-zone="review">
+                        <!-- Pending Review Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-l-4 border-orange-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="8" data-priority="high" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 text-xs px-2 py-1 rounded-full font-medium">Pending Review</span>
+                                    <span class="bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 text-xs px-2 py-1 rounded-full font-medium">Urgent</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Database optimization queries</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Performance improvements for user data queries and indexing</p>
+                            <div class="flex items-center justify-between text-xs mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-clock text-orange-500"></i>
+                                    <span class="text-orange-600 dark:text-orange-400 font-medium">Waiting 2 hours</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-medium">L</div>
+                                </div>
+                            </div>
+                            <!-- Review Comments -->
+                            <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2 text-xs">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <i class="fas fa-comment text-gray-400"></i>
+                                    <span class="text-gray-600 dark:text-gray-400">2 comments</span>
+                                </div>
+                                <p class="text-gray-700 dark:text-gray-300">"Consider adding query caching for better performance..."</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Final Review Card -->
+                        <div class="card-hover-glow bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-l-4 border-indigo-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm" data-card-id="9" data-priority="medium" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full font-medium">Final Review</span>
+                                    <span class="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full font-medium">Ready</span>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Mobile responsive layout</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Ensure all components work properly on mobile devices</p>
+                            <div class="flex items-center justify-between text-xs mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-green-600 dark:text-green-400 font-medium">Ready to deploy</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-medium">K</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs">
+                                <div class="flex -space-x-1">
+                                    <div class="w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-white text-xs">✓</div>
+                                    <div class="w-5 h-5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-white text-xs">✓</div>
+                                </div>
+                                <span class="text-green-600 dark:text-green-400 font-medium">2 approvals</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Done Column -->
+                <div class="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Done</h3>
+                                <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">8</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:clearCompleted">
+                                <i class="fas fa-archive text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3 bg-gray-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+                            <div class="bg-gradient-to-r from-emerald-500 to-green-500 h-full rounded-full transition-all duration-500" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 space-y-3 min-h-96 max-h-full overflow-y-auto" data-drop-zone="done">
+                        <!-- Completed Cards (showing a few with fade effect) -->
+                        <div class="card-hover-glow bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/10 dark:to-green-900/10 border-l-4 border-emerald-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm opacity-90" data-card-id="10" data-status="completed" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">Completed</span>
+                                    <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">User profile page design</h4>
+                            <p class="text-gray-600 dark:text-gray-400 text-xs mb-3">Created responsive user profile layout with avatar upload</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar-check text-emerald-500"></i>
+                                    <span class="text-emerald-600 dark:text-emerald-400">Completed 2 days ago</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white text-xs font-medium">A</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-hover-glow bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/10 dark:to-green-900/10 border-l-4 border-emerald-500 rounded-lg p-4 cursor-grab active:cursor-grabbing shadow-sm opacity-75" data-card-id="11" data-status="completed" draggable="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">Completed</span>
+                                    <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
+                                </div>
+                            </div>
+                            <h4 class="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-2">Landing page optimization</h4>
+                            <p class="text-gray-500 dark:text-gray-500 text-xs mb-3">Improved loading speed and SEO optimization</p>
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar-check text-emerald-500"></i>
+                                    <span class="text-emerald-600 dark:text-emerald-400">Completed 1 week ago</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white text-xs font-medium">J</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Show More Button -->
+                        <button class="w-full py-3 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200" data-event="click:showMoreCompleted">
+                            <i class="fas fa-chevron-down mr-2"></i>
+                            Show 6 more completed tasks
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- @END_MAP )) -->
+                
+                <!-- Add New Column Button -->
+                <div class="flex-shrink-0 w-80">
+                    <button class="w-full h-40 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col items-center justify-center space-y-2 group" data-event="click:addColumn">
+                        <i class="fas fa-plus text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 text-2xl"></i>
+                        <span class="text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 text-sm font-medium">Add Column</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- @END_COMPONENT: MainBoard -->
+    
+</div>
+<!-- @END_COMPONENT: AppLayout -->
+
+<!-- @COMPONENT: AIAssistant [floating AI helper widget] -->
+<!-- @STATE: aiVisible:boolean = false -->
+<div class="fixed bottom-6 right-6 z-50 animate-slide-up" style="display: none;" data-component="ai-assistant">
+    <div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-700/50 w-80 max-h-96 overflow-hidden animate-glow-pulse">
+        <div class="p-4 border-b border-gray-200/50 dark:border-slate-700/50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white text-sm">AI Assistant</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Task optimization suggestions</p>
+                    </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:closeAI">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4 space-y-3 max-h-64 overflow-y-auto">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 border-l-2 border-blue-500">
+                <div class="flex items-start space-x-2">
+                    <i class="fas fa-lightbulb text-blue-500 text-sm mt-0.5"></i>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Priority Suggestion</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Consider moving "Payment gateway integration" to Review after reaching 85% completion.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg p-3 border-l-2 border-emerald-500">
+                <div class="flex items-start space-x-2">
+                    <i class="fas fa-chart-line text-emerald-500 text-sm mt-0.5"></i>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Workflow Optimization</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Your "In Progress" column has reached optimal capacity. Consider reviewing dependencies.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-3 border-l-2 border-yellow-500">
+                <div class="flex items-start space-x-2">
+                    <i class="fas fa-clock text-yellow-500 text-sm mt-0.5"></i>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Deadline Alert</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">3 high-priority tasks have deadlines within the next 2 days.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200/50 dark:border-slate-700/50">
+            <button class="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105" data-event="click:optimizeBoard">
+                <i class="fas fa-magic mr-2"></i>
+                Optimize Board Layout
+            </button>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AIAssistant -->
+
+<!-- @COMPONENT: MiniMap [navigation overview] -->
+<!-- @STATE: miniMapVisible:boolean = false -->
+<div class="fixed top-20 right-4 z-40 animate-slide-up" style="display: none;" data-component="mini-map">
+    <div class="mini-map rounded-xl shadow-lg border border-gray-200/50 dark:border-slate-700/50 w-64 p-3">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-gray-900 dark:text-white text-sm">Board Overview</h3>
+            <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200" data-event="click:closeMiniMap">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+        
+        <div class="flex space-x-2 mb-3">
+            <div class="flex-1 bg-blue-100 dark:bg-blue-900/30 rounded p-2">
+                <div class="text-xs text-blue-800 dark:text-blue-200 font-medium mb-1">Backlog</div>
+                <div class="space-y-1">
+                    <div class="w-full h-1 bg-red-300 dark:bg-red-600 rounded"></div>
+                    <div class="w-3/4 h-1 bg-yellow-300 dark:bg-yellow-600 rounded"></div>
+                    <div class="w-2/3 h-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                    <div class="w-full h-1 bg-emerald-300 dark:bg-emerald-600 rounded"></div>
+                </div>
+            </div>
+            
+            <div class="flex-1 bg-yellow-100 dark:bg-yellow-900/30 rounded p-2">
+                <div class="text-xs text-yellow-800 dark:text-yellow-200 font-medium mb-1">Progress</div>
+                <div class="space-y-1">
+                    <div class="w-full h-1 bg-blue-300 dark:bg-blue-600 rounded"></div>
+                    <div class="w-4/5 h-1 bg-purple-300 dark:bg-purple-600 rounded"></div>
+                    <div class="w-5/6 h-1 bg-emerald-300 dark:bg-emerald-600 rounded"></div>
+                </div>
+            </div>
+            
+            <div class="flex-1 bg-orange-100 dark:bg-orange-900/30 rounded p-2">
+                <div class="text-xs text-orange-800 dark:text-orange-200 font-medium mb-1">Review</div>
+                <div class="space-y-1">
+                    <div class="w-full h-1 bg-orange-300 dark:bg-orange-600 rounded"></div>
+                    <div class="w-5/6 h-1 bg-indigo-300 dark:bg-indigo-600 rounded"></div>
+                </div>
+            </div>
+            
+            <div class="flex-1 bg-emerald-100 dark:bg-emerald-900/30 rounded p-2">
+                <div class="text-xs text-emerald-800 dark:text-emerald-200 font-medium mb-1">Done</div>
+                <div class="space-y-1">
+                    <div class="w-full h-1 bg-emerald-300 dark:bg-emerald-600 rounded opacity-50"></div>
+                    <div class="w-3/4 h-1 bg-emerald-300 dark:bg-emerald-600 rounded opacity-30"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-xs text-gray-600 dark:text-gray-400 text-center">
+            Scroll to navigate • Click to jump to section
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: MiniMap -->
+
+<!-- @COMPONENT: TaskModal [card editing overlay] -->
+<!-- @STATE: modalOpen:boolean = false, selectedTask:object = null -->
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;" data-component="task-modal" data-event="click:closeModal">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-slide-up" data-event="click:stopPropagation">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <input type="text" class="text-xl font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none w-full" placeholder="Task title..." value="Redesign user dashboard interface" data-bind="selectedTask.title">
+                    <div class="flex items-center space-x-2 mt-2">
+                        <select class="text-sm bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 px-2 py-1 rounded-full font-medium border-none outline-none" data-bind="selectedTask.priority">
+                            <option value="high">High Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                        <select class="text-sm bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full font-medium border-none outline-none" data-bind="selectedTask.category">
+                            <option value="ui-ux">UI/UX</option>
+                            <option value="backend">Backend</option>
+                            <option value="frontend">Frontend</option>
+                            <option value="testing">Testing</option>
+                            <option value="docs">Documentation</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 ml-4" data-event="click:closeModal">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6 space-y-6 overflow-y-auto" style="max-height: calc(90vh - 200px);">
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                <textarea class="w-full p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white resize-none" rows="4" placeholder="Add task description..." data-bind="selectedTask.description">Update the main dashboard with new color scheme and improved navigation patterns. Include responsive design considerations and accessibility improvements.</textarea>
+            </div>
+            
+            <!-- Due Date and Assignee -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+                    <input type="date" class="w-full p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" data-bind="selectedTask.dueDate">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                    <select class="w-full p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" data-bind="selectedTask.status">
+                        <option value="backlog">Backlog</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">Review</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Progress -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Progress</label>
+                <div class="flex items-center space-x-4">
+                    <input type="range" class="flex-1" min="0" max="100" value="0" data-bind="selectedTask.progress">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white w-12" data-bind="selectedTask.progress + '%'">0%</span>
+                </div>
+                <div class="mt-2 bg-gray-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-300" style="width: 0%" data-bind="selectedTask.progress + '%'"></div>
+                </div>
+            </div>
+            
+            <!-- Tags -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium">design</span>
+                    <span class="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 text-xs px-2 py-1 rounded-full font-medium">dashboard</span>
+                    <span class="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full font-medium">frontend</span>
+                </div>
+                <input type="text" class="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm" placeholder="Add tags..." data-event="keydown:addTag">
+            </div>
+            
+            <!-- Dependencies -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dependencies</label>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-link text-gray-400 text-sm"></i>
+                            <span class="text-sm text-gray-900 dark:text-white">User authentication system</span>
+                            <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs px-2 py-1 rounded-full font-medium">Completed</span>
+                        </div>
+                        <button class="text-gray-400 hover:text-red-500 transition-colors duration-200" data-event="click:removeDependency">
+                            <i class="fas fa-times text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="mt-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200" data-event="click:addDependency">
+                    <i class="fas fa-plus mr-1"></i>
+                    Add Dependency
+                </button>
+            </div>
+            
+            <!-- Comments -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Comments</label>
+                <div class="space-y-3 mb-4">
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">A</div>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">You</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">2 hours ago</span>
+                        </div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">Started working on the color palette. Considering a more modern gradient approach.</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">A</div>
+                    <textarea class="flex-1 p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white resize-none" rows="2" placeholder="Add a comment..." data-event="keydown:addComment"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t border-gray-200 dark:border-slate-700 flex justify-between">
+            <button class="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 font-medium" data-event="click:deleteTask">
+                <i class="fas fa-trash mr-2"></i>
+                Delete Task
+            </button>
+            <div class="flex space-x-3">
+                <button class="px-6 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 font-medium" data-event="click:closeModal">Cancel</button>
+                <button class="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg transition-all duration-200 font-medium transform hover:scale-105" data-event="click:saveTask">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: TaskModal -->
+
+<!-- Dependency Lines SVG Overlay -->
+<!-- @FUNCTIONALITY: This SVG overlay should render animated dependency lines between connected tasks -->
+<svg class="fixed inset-0 pointer-events-none z-30" style="display: none;" data-component="dependency-lines">
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(59, 130, 246, 0.6)" />
+        </marker>
+    </defs>
+    <!-- Example dependency line -->
+    <path d="M 100 200 Q 200 150 300 200" stroke="rgba(59, 130, 246, 0.6)" stroke-width="2" fill="none" marker-end="url(#arrowhead)" class="dependency-line" />
+</svg>
+
+<script>
+    // TODO: Implement drag and drop functionality
+    (function() {
+        'use strict';
+        
+        // Theme Toggle Functionality
+        const themeToggle = document.querySelector('[data-event="click:toggleTheme"]');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            html.classList.add('dark');
+        }
+        
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                html.classList.toggle('dark');
+                
+                // Save theme preference
+                const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+                
+                // Add animation class for smooth transition
+                document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+                setTimeout(() => {
+                    document.body.style.transition = '';
+                }, 500);
+            });
+        }
+        
+        // AI Assistant Toggle
+        const aiToggle = document.querySelector('[data-event="click:toggleAI"]');
+        const aiAssistant = document.querySelector('[data-component="ai-assistant"]');
+        const aiClose = document.querySelector('[data-event="click:closeAI"]');
+        
+        if (aiToggle && aiAssistant) {
+            aiToggle.addEventListener('click', function() {
+                aiAssistant.style.display = aiAssistant.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        if (aiClose && aiAssistant) {
+            aiClose.addEventListener('click', function() {
+                aiAssistant.style.display = 'none';
+            });
+        }
+        
+        // Mini Map Toggle
+        const miniMapToggle = document.querySelector('[data-event="click:toggleMiniMap"]');
+        const miniMap = document.querySelector('[data-component="mini-map"]');
+        const miniMapClose = document.querySelector('[data-event="click:closeMiniMap"]');
+        
+        if (miniMapToggle && miniMap) {
+            miniMapToggle.addEventListener('click', function() {
+                miniMap.style.display = miniMap.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        if (miniMapClose && miniMap) {
+            miniMapClose.addEventListener('click', function() {
+                miniMap.style.display = 'none';
+            });
+        }
+        
+        // Task Modal
+        const taskModal = document.querySelector('[data-component="task-modal"]');
+        const taskCards = document.querySelectorAll('[data-card-id]');
+        
+        // Open modal when clicking on cards
+        taskCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (taskModal) {
+                    taskModal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+        
+        // Close modal functionality
+        const modalCloseButtons = document.querySelectorAll('[data-event="click:closeModal"]');
+        modalCloseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (taskModal) {
+                    taskModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+        
+        // Prevent modal from closing when clicking inside
+        const modalContent = document.querySelector('[data-event="click:stopPropagation"]');
+        if (modalContent) {
+            modalContent.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        // Card Hover Effects
+        const cards = document.querySelectorAll('.card-hover-glow');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px) scale(1.02)';
+                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Simulate drag and drop visual feedback
+        const dropZones = document.querySelectorAll('[data-drop-zone]');
+        const draggableCards = document.querySelectorAll('[draggable="true"]');
+        
+        draggableCards.forEach(card => {
+            card.addEventListener('dragstart', function(e) {
+                this.style.opacity = '0.5';
+                // Show drop zones
+                dropZones.forEach(zone => {
+                    zone.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                    zone.style.border = '2px dashed rgba(59, 130, 246, 0.3)';
+                });
+            });
+            
+            card.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+                // Hide drop zones
+                dropZones.forEach(zone => {
+                    zone.style.backgroundColor = '';
+                    zone.style.border = '';
+                });
+            });
+        });
+        
+        // Progress bar animations
+        const progressBars = document.querySelectorAll('[style*="width:"]');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+                bar.style.transition = 'width 1s ease-out';
+            }, 300);
+        });
+        
+        // Add subtle animations on page load
+        const animatedElements = document.querySelectorAll('.animate-fade-in');
+        animatedElements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+                element.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            }, index * 100);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Toggle theme with Ctrl/Cmd + D
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                if (themeToggle) {
+                    themeToggle.click();
+                }
+            }
+            
+            // Toggle AI assistant with Ctrl/Cmd + A
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                e.preventDefault();
+                if (aiToggle) {
+                    aiToggle.click();
+                }
+            }
+            
+            // Close modal with Escape
+            if (e.key === 'Escape') {
+                if (taskModal && taskModal.style.display !== 'none') {
+                    taskModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        });
+        
+        // Search functionality placeholder
+        const searchInput = document.querySelector('input[placeholder="Search tasks..."]');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                // TODO: Implement search filtering logic
+                console.log('Searching for:', query);
+            });
+        }
+        
+    })();
+</script>
+
+</body>
+</html>

@@ -310,17 +310,15 @@ export function KanbanBoard() {
       </header>
 
       {/* Main Board */}
-      <main className="flex-1 p-4 overflow-hidden">
+      <main className="flex-1 p-4 overflow-y-auto">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="w-full h-full overflow-x-auto overflow-y-hidden">
-            <Droppable droppableId="board" type="column" direction="horizontal">
-              {(provided: any) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="flex space-x-6 h-full"
-                  style={{ minWidth: '1200px', width: 'max-content' }}
-                >
+          <Droppable droppableId="board" type="column" direction="horizontal">
+            {(provided: any) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full"
+              >
                   {columns.map((column: Column, index: number) => (
                     <KanbanColumn
                       key={column.id}
@@ -333,24 +331,23 @@ export function KanbanBoard() {
                   ))}
                   {provided.placeholder}
                   
-                  {/* Add Column Button */}
-                  <div className="flex-shrink-0 w-80">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleAddColumn}
-                      className="w-full h-40 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col items-center justify-center space-y-2 group"
-                    >
-                      <Plus className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 text-2xl" />
-                      <span className="text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 text-sm font-medium">
-                        Add Column
-                      </span>
-                    </motion.button>
-                  </div>
+                {/* Add Column Button */}
+                <div className="w-full">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleAddColumn}
+                    className="w-full h-40 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col items-center justify-center space-y-2 group"
+                  >
+                    <Plus className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 text-2xl" />
+                    <span className="text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 text-sm font-medium">
+                      Add Column
+                    </span>
+                  </motion.button>
+                </div>
                 </div>
               )}
             </Droppable>
-          </div>
         </DragDropContext>
       </main>
 

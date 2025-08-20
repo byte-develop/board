@@ -33,7 +33,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1, type: "spring", stiffness: 200, damping: 20 }}
-          className="flex-shrink-0 w-80 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
+          className="w-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-slate-700/50 shadow-lg"
         >
           <div 
             {...provided.dragHandleProps}

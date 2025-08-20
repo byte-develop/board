@@ -310,9 +310,9 @@ export function KanbanBoard() {
       </header>
 
       {/* Main Board */}
-      <main className="flex-1 p-4 overflow-y-auto">
+      <main className="flex-1 p-4">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex flex-col lg:flex-row gap-6 min-h-full overflow-x-auto">
+          <div className="flex flex-col lg:flex-row gap-6 min-h-full">
             {columns.map((column: Column, index: number) => (
               <KanbanColumn
                 key={column.id}

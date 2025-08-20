@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
+import { createPortal } from "react-dom";
 import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
 import type { Column, Task } from "@shared/schema";
@@ -87,26 +88,39 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                     ? "bg-blue-50/50 dark:bg-blue-900/10" 
                     : ""
                 }`}
+                style={{
+                  // Убираем любые transform стили, которые могут мешать
+                  position: 'relative'
+                }}
               >
                 {tasks.map((task, taskIndex) => (
                   <Draggable key={task.id} draggableId={task.id} index={taskIndex}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <TaskCard
-                          task={task}
-                          onEdit={onEditTask}
-                          isDragging={snapshot.isDragging}
-                        />
-                      </div>
-                    )}
+                    {(provided, snapshot) => {
+                      const child = (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            marginBottom: '12px',
+                          }}
+                        >
+                          <TaskCard
+                            task={task}
+                            onEdit={onEditTask}
+                            isDragging={snapshot.isDragging}
+                          />
+                        </div>
+                      );
+
+                      // Если элемент перетаскивается, рендерим его через Portal в body
+                      if (snapshot.isDragging) {
+                        return createPortal(child, document.body);
+                      }
+
+                      return child;
+                    }}
                   </Draggable>
                 ))}
                 {provided.placeholder}

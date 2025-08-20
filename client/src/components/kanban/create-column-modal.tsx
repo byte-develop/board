@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
@@ -35,6 +35,9 @@ export function CreateColumnModal({ isOpen, onClose, onCreateColumn }: CreateCol
             <Plus className="h-5 w-5" />
             Create New Column
           </DialogTitle>
+          <DialogDescription>
+            Create a new column to organize your tasks.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

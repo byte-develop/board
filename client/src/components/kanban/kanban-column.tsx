@@ -22,11 +22,10 @@ const columnColors = {
 };
 
 export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: KanbanColumnProps) {
-  // Исправляем подсчет прогресса - используем progress поле или проверяем колонку "done"
-  const completedTasks = tasks.filter(task => 
-    task.columnId === "done" || task.progress === 100
-  ).length;
-  const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+  // Подсчитываем средний прогресс задач в этой колонке
+  const averageProgress = tasks.length > 0 
+    ? tasks.reduce((sum, task) => sum + (task.progress || 0), 0) / tasks.length 
+    : 0;
 
   return (
     <motion.div
@@ -51,7 +50,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                 <div className="min-w-0 flex-1">
                   <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{column.title}</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
-                    {tasks.length} task{tasks.length !== 1 ? 's' : ''} • {Math.round(progress)}% complete
+                    {tasks.length} task{tasks.length !== 1 ? 's' : ''} • {Math.round(averageProgress)}% complete
                   </p>
                 </div>
                 <span className={`text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-bold shadow-sm border flex-shrink-0 ${
@@ -96,7 +95,7 @@ export function KanbanColumn({ column, tasks, onAddTask, onEditTask, index }: Ka
                   background: `linear-gradient(90deg, ${column.color}CC, ${column.color})`
                 }}
                 initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
+                animate={{ width: `${averageProgress}%` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </div>

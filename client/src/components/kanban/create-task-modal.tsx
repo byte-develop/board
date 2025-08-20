@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,6 +56,9 @@ export function CreateTaskModal({ isOpen, onClose, onCreateTask, columnId }: Cre
             <Plus className="h-5 w-5" />
             Create New Task
           </DialogTitle>
+          <DialogDescription>
+            Create a new task with title, description, and priority level.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
